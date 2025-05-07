@@ -1,4 +1,4 @@
-This Application comes with custom features fully implemented by myself, no outside libraries  
+<h2>This Application comes with custom features fully implemented by myself, no outside libraries</h2>  
 
 1.) Allows creation and modification of bmp files  
 2.) Displays the bmp file updating every frame (WIP)  
@@ -7,5 +7,9 @@ This Application comes with custom features fully implemented by myself, no outs
 5.) Supports linearly interpolation between points to fill in both the colors and pixels in between vertices in a triangle  
   
 Through this application I have created essentially an animation of a spinning cube  
+
+<h2>Examples</h2>  
+
   
+<h3>Rasteizer</h3>  
 ![Rasterizer Example](https://github.com/Jakemuzy/BMP-Rasterizer-and-3D-projection/blob/main/Examples/Rasterizer.png)
