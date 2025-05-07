@@ -6,4 +6,6 @@ This Application comes with custom features fully implemented by myself, no outs
 4.) Supports double buffer rendering for better animated experience  
 5.) Supports linearly interpolation between points to fill in both the colors and pixels in between vertices in a triangle  
   
-Through this application I have created essentially an animation of a spinning cube
+Through this application I have created essentially an animation of a spinning cube  
+  
+![Rasterizer Example](https://github.com/Jakemuzy/BMP-Rasterizer-and-3D-projection/blob/main/Examples/Rasterizer.png)
