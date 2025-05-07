@@ -12,4 +12,5 @@ Through this application I have created essentially an animation of a spinning c
 
   
 <h3>Rasterizer</h3>  
+
 ![Rasterizer Example](https://raw.githubusercontent.com/Jakemuzy/BMP-Rasterizer-and-3D-projection/main/Examples/Rasterizer.png)
