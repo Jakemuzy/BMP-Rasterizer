@@ -1,0 +1,3 @@
+C:/Users/jmuzy/OneDrive/Desktop/Projects/BMP/builds/CMakeFiles/BMP.dir
+C:/Users/jmuzy/OneDrive/Desktop/Projects/BMP/builds/CMakeFiles/ALL_BUILD.dir
+C:/Users/jmuzy/OneDrive/Desktop/Projects/BMP/builds/CMakeFiles/ZERO_CHECK.dir

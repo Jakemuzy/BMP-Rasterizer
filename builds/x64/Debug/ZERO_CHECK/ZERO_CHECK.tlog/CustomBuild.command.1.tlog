@@ -1,0 +1,10 @@
+^C:\USERS\JMUZY\ONEDRIVE\DESKTOP\PROJECTS\BMP\BUILDS\CMAKEFILES\6C1301ABC28660B8E2F74A2578329BEC\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/jmuzy/OneDrive/Desktop/Projects/BMP -BC:/Users/jmuzy/OneDrive/Desktop/Projects/BMP/builds --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/jmuzy/OneDrive/Desktop/Projects/BMP/builds/BMP.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
