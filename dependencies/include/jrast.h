@@ -30,6 +30,23 @@ void isBigEndian()
     }
 }
 
+//  Colors
+
+namespace StandardColors
+{
+    constexpr Color Black = {0, 0, 0};
+    constexpr Color White = {255, 255, 255};
+    constexpr Color Red = {255, 0, 0};
+    constexpr Color Orange = {255, 127, 0};
+    constexpr Color Yellow = {255, 255, 0};
+    constexpr Color Green = {0, 255, 0};
+    constexpr Color Cyan = {0, 255, 255};
+    constexpr Color Blue = {0, 0, 255};
+    constexpr Color Purple = {128, 0, 128};
+    constexpr Color Violet = {148, 0, 211};
+    constexpr Color Teal = {0, 128, 128};
+}
+
 //  Takes 2 colors, and the change per frame
 Color lerpColor(Color col1, Color col2, Color col3, float blendRatio[3])
 {
