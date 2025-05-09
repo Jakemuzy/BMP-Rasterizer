@@ -1,5 +1,7 @@
 <h2>This Application comes with custom features fully implemented by myself, no outside libraries</h2>  
-
+With the exception of Cimg to present the image on screen  
+  
+Utilizing BMPs to act as a sort of virtual screen, I have replicated the rasterization process that 3d graphics software achieves  
 1.) Allows creation and modification of bmp files  
 2.) Displays the bmp file updating every frame 
 3.) Allows for the projection of 3d points onto the 2d screen space that is the bmp file 
@@ -7,7 +9,7 @@
 5.) Supports linearly interpolation between points to fill in both the colors and pixels in between vertices in a triangle  
 6.) Utilizes frame buffer and depth buffer for better performance
   
-Through this application I have created essentially an animation of a spinning cube  
+Utilizing BMPs to act as a sort of virtual screen, I have replicated the rasterization process that 3d graphics software achieves
 
 <h2>Examples</h2>  
 
