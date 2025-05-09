@@ -10,11 +10,9 @@ Through this application I have created essentially an animation of a spinning c
 
 <h2>Examples</h2>  
 
-  
-<h3>Rasterizer</h3>  
-
-![Rasterizer Example](https://raw.githubusercontent.com/Jakemuzy/BMP-Rasterizer-and-3D-projection/main/Examples/Rasterizer.png)  
 
 <h3>Gif Example</h3>  
 
 ![Gif Spinning Cube](https://github.com/Jakemuzy/BMP-Rasterizer-and-3D-projection/blob/2f71ae98a9a1864ee6e238c3a908be55a974726d/Examples/rotateCube.gif)  
+  
+
