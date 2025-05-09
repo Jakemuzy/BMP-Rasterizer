@@ -3,6 +3,26 @@ struct Color
     float r;
     float g;
     float b;
+
+    Color operator*(float scale) const{
+        Color newCol;
+
+        newCol.r = r*scale;
+        newCol.g = g*scale;
+        newCol.b = b*scale;
+
+        return newCol;
+    }
+
+    Color operator+(const Color& other) const{
+        Color newCol;
+
+        newCol.r = r + other.r;
+        newCol.g = g + other.g;
+        newCol.b = b + other.b;
+
+        return newCol;
+    }
 };
 
 struct Vertex
@@ -26,7 +46,7 @@ void isBigEndian()
     if (*(reinterpret_cast<uint8_t *>(&num)) == 0)
     {
         std::cout << "System is Big Endian: Program will not function correclty\n";
-        abort;
+        std::abort();
     }
 }
 
@@ -47,303 +67,96 @@ namespace StandardColors
     constexpr Color Teal = {0, 128, 128};
 }
 
-//  Takes 2 colors, and the change per frame
-Color lerpColor(Color col1, Color col2, Color col3, float blendRatio[3])
+//  Weights for each point inside a triangle
+void barycentric(float px, float py, const Vertex &v0, const Vertex &v1, const Vertex &v2, float &w0, float &w1, float &w2)
 {
+    // Compute the area of the triangle (using the determinant)
+    float denom = (v1.y - v2.y) * (v0.x - v2.x) + (v2.x - v1.x) * (v0.y - v2.y);
 
-    float newColB = (col1.b / 255) * blendRatio[0] + (col2.b / 255) * blendRatio[1] + (col3.b / 255) * blendRatio[2];
-    float newColG = (col1.g / 255) * blendRatio[0] + (col2.g / 255) * blendRatio[1] + (col3.g / 255) * blendRatio[2];
-    float newColR = (col1.r / 255) * blendRatio[0] + (col2.r / 255) * blendRatio[1] + (col3.r / 255) * blendRatio[2];
+    //  No divide by 0
+    if (std::abs(denom) < 1e-5f)
+    {
+        w0 = w1 = w2 = -1.0f;
+        return;
+    }
 
-    Color newCol = {newColB * 255, newColG * 255, newColR * 255};
+    // Compute the barycentric weights
+    w0 = ((v1.y - v2.y) * (px - v2.x) + (v2.x - v1.x) * (py - v2.y)) / denom;
+    w1 = ((v2.y - v0.y) * (px - v2.x) + (v0.x - v2.x) * (py - v2.y)) / denom;
+    w2 = 1.0f - w0 - w1;
 
-    return newCol;
+    return;
 }
 
-//
-void lerpFillTriangle(Triangle tri, std::string currentBuffer, InfoHeader &infoHeader, Header &header, std::fstream &file)
+//  Fill triangle, including color lerp
+void lerpFillTriangle(Triangle tri, InfoHeader &infoHeader, Header &header, std::vector<uint8_t>& frameBuffer, std::vector<uint8_t> &zBuffer, float zNear, float zFar)
 {
     //  Colors
     Color col1 = tri.vert1.color;
     Color col2 = tri.vert2.color;
     Color col3 = tri.vert3.color;
 
-    //  Sort by Y values
+    //  Sort by X values then Y to get bounding box
     Vertex v0 = tri.vert1;
     Vertex v1 = tri.vert2;
     Vertex v2 = tri.vert3;
 
-    if (v1.y < v0.y)
-        std::swap(v0, v1);
-    if (v2.y < v0.y)
-        std::swap(v0, v2);
-    if (v2.y < v1.y)
-        std::swap(v1, v2);
+    int startX = std::floor(std::min({v0.x, v1.x, v2.x}));
+    int endX = std::ceil(std::max({v0.x, v1.x, v2.x}));
 
-    //  Separate Triangle type
-    if (v0.y == v1.y) // Flat top
-    {
-        //  Slope for left and right side of triangle
-        float m1 = (float)(v2.x - v0.x) / (v2.y - v0.y);
-        float m2 = (float)(v2.x - v1.x) / (v2.y - v1.y);
+    int startY = std::floor(std::min({v0.y, v1.y, v2.y}));
+    int endY = std::ceil(std::max({v0.y, v1.y, v2.y}));
 
-        //  Rasterize the triangle horizontally (Scanline) from the bottom up
-        for (int y = v0.y; y <= v2.y; y++)
-        { // might not need <= here because vert already rendered I think
-
-            int xStart = v0.x + m1 * (y - v0.y);
-            int xEnd = v1.x + m2 * (y - v1.y);
-
-            if (xEnd < xStart)
-            {
-                std::swap(xStart, xEnd);
-            }
-
-            int correctedY = (infoHeader.height - 1) - y; // flip Y for BMP
-            for (int x = xStart; x <= xEnd; x++)
-            {
-
-                int rowSize = ((infoHeader.width * 3 + 3) / 4) * 4; // each row padded to multiple of 4
-                int index = header.dataOffset + correctedY * rowSize + static_cast<int>(x) * 3;
-                file.seekp(index, std::ios::beg);
-
-                //  Calculate color blending by distance to each vert
-                float dist1 = sqrt((v0.x - x) * (v0.x - x) + (v0.y - y) * (v0.y - y));
-                float dist2 = sqrt((v1.x - x) * (v1.x - x) + (v1.y - y) * (v1.y - y));
-                float dist3 = sqrt((v2.x - x) * (v2.x - x) + (v2.y - y) * (v2.y - y));
-
-                float inv1 = 1.0 / (dist1 + 1e-6f); // add epsilon to avoid div-by-zero
-                float inv2 = 1.0 / (dist2 + 1e-6f);
-                float inv3 = 1.0 / (dist3 + 1e-6f);
-
-                float totalInvDist = inv1 + inv2 + inv3;
-
-                float colBlend[3] = {inv1 / totalInvDist, inv2 / totalInvDist, inv3 / totalInvDist};
-                Color newCol = lerpColor(col1, col2, col3, colBlend); // Ratio for each color to take
-
-                file.put(newCol.b);
-                file.put(newCol.g);
-                file.put(newCol.r);
-            }
-        }
-    }
-    else if (v1.y == v2.y) // Flat bottom
-    {
-
-        //  Slope for left and right side of triangle
-        float m1 = (float)(v0.x - v1.x) / (v0.y - v1.y);
-        float m2 = (float)(v0.x - v2.x) / (v0.y - v2.y);
-
-        //  Rasterize the triangle horizontally (Scanline) from the top down
-        for (int y = v0.y; y <= v1.y; y++)
+    //  Drawing based on the bound box
+    for(int x = startX; x <= endX; x++){
+        for(int y = startY; y <= endY; y++)
         {
+            //  Pixels off screen
+            if (x < 0 || x >= infoHeader.width || y < 0 || y >= infoHeader.height)
+                continue;
 
-            int xStart = v1.x + m1 * (y - v1.y);
-            int xEnd = v2.x + m2 * (y - v2.y);
+            float w0, w1, w2;
+            barycentric(x + 0.5f, y + 0.5f, v0, v1, v2, w0, w1, w2);
 
-            if (xEnd < xStart)
+            //  Not in triangle
+            if (w0 < 0 || w1 < 0 || w2 < 0) 
             {
-                std::swap(xStart, xEnd);
+                continue;
             }
 
+            //  Draw to the screen
             int correctedY = (infoHeader.height - 1) - y; // flip Y for BMP
-            for (int x = xStart; x <= xEnd; x++)
+
+            int zIndex = correctedY * infoHeader.width + x;
+            int index = correctedY * infoHeader.width * 3 + x * 3; // +3 for 3 bytes per pixel
+            
+            //  Depth testing
+            uint8_t currentDepth;
+            currentDepth = zBuffer[zIndex];
+
+            float depth = v0.z * w0 + v1.z * w1 + v2.z * w2;
+            depth = std::clamp(depth, 0.0f, 1.0f);
+            uint8_t newDepth = static_cast<uint8_t>(depth * 255.0f);
+
+            if(newDepth <= currentDepth)
             {
-
-                int rowSize = ((infoHeader.width * 3 + 3) / 4) * 4; 
-                int index = header.dataOffset + correctedY * rowSize + static_cast<int>(x) * 3;
-                file.seekp(index, std::ios::beg);
-
-                //  Calculate color blending by distance to each vert
-                float dist1 = sqrt((v0.x - x) * (v0.x - x) + (v0.y - y) * (v0.y - y));
-                float dist2 = sqrt((v1.x - x) * (v1.x - x) + (v1.y - y) * (v1.y - y));
-                float dist3 = sqrt((v2.x - x) * (v2.x - x) + (v2.y - y) * (v2.y - y));
-
-                float inv1 = 1.0 / (dist1 + 1e-6f); // add epsilon to avoid div-by-zero
-                float inv2 = 1.0 / (dist2 + 1e-6f);
-                float inv3 = 1.0 / (dist3 + 1e-6f);
-
-                float totalInvDist = inv1 + inv2 + inv3;
-
-                float colBlend[3] = {inv1 / totalInvDist, inv2 / totalInvDist, inv3 / totalInvDist};
-                Color newCol = lerpColor(col1, col2, col3, colBlend); // Ratio for each color to take
-
-                file.put(newCol.b);
-                file.put(newCol.g);
-                file.put(newCol.r);
-            }
-        }
-    }
-    else //  Split into two triangles by adding extra vert, one flat top, one flat bottom
-    {
-
-        //Calculate where to split triangle
-        float m0 = (float)(v0.x - v2.x) / (v0.y - v2.y);
-        float y0 = v1.y;
-        float x0 = v0.x + m0 * (y0 - v0.y);
-
-        float inv1 = 1.0 / (sqrt((v0.x - x0) * (v0.x - x0) + (v0.y - y0) * (v0.y - y0)) + 1e-6f);
-        float inv2 = 1.0 / (sqrt((v1.x - x0) * (v1.x - x0) + (v1.y - y0) * (v1.y - y0)) + 1e-6f);
-        float inv3 = 1.0 / (sqrt((v2.x - x0) * (v2.x - x0) + (v2.y - y0) * (v2.y - y0)) + 1e-6f);
-
-        float totalInvDist = inv1 + inv2 + inv3;
-
-        float colBlend[3] = {inv1 / totalInvDist, inv2 / totalInvDist, inv3 / totalInvDist};
-
-        Vertex vi = {x0, v1.y, 0, lerpColor(col1, col2, col3, colBlend)};   //  Only need lerp 2 colors 
-
-        //  Calculate flat bottom
-
-        float m1 = (float)(v0.x - vi.x) / (v0.y - vi.y);
-        float m2 = (float)(v0.x - v1.x) / (v0.y - v1.y);
-
-        for (int y = v0.y; y <= v1.y; y++)
-        {
-
-            int xStart = v0.x + m1 * (y - v0.y);
-            int xEnd = v0.x + m2 * (y - v0.y);
-
-            if (xEnd < xStart)
-            {
-                std::swap(xStart, xEnd);
+                continue;
             }
 
-            int correctedY = (infoHeader.height - 1) - y; // flip Y for BMP
-            for (int x = xStart; x <= xEnd; x++)
-            {
+            //  Draw to the screen buffer
 
-                int rowSize = ((infoHeader.width * 3 + 3) / 4) * 4;
-                int index = header.dataOffset + correctedY * rowSize + static_cast<int>(x) * 3;
-                file.seekp(index, std::ios::beg);
+            Color newCol = col1 * w0 + col2 * w1 + col3 * w2;
+            newCol.r = std::clamp(newCol.r, 0.0f, 255.0f);
+            newCol.g = std::clamp(newCol.g, 0.0f, 255.0f);
+            newCol.b = std::clamp(newCol.b, 0.0f, 255.0f);
 
-                //  Calculate color blending by distance to each vert
-                float dist1 = sqrt((v0.x - x) * (v0.x - x) + (v0.y - y) * (v0.y - y));
-                float dist2 = sqrt((v1.x - x) * (v1.x - x) + (v1.y - y) * (v1.y - y));
-                float dist3 = sqrt((v2.x - x) * (v2.x - x) + (v2.y - y) * (v2.y - y));
+            zBuffer[zIndex] = newDepth;
 
-                float inv1 = 1.0 / (dist1 + 1e-6f); // add epsilon to avoid div-by-zero
-                float inv2 = 1.0 / (dist2 + 1e-6f);
-                float inv3 = 1.0 / (dist3 + 1e-6f);
+            frameBuffer[index + 0] = static_cast<uint8_t>(newCol.b);
+            frameBuffer[index + 1] = static_cast<uint8_t>(newCol.g);
+            frameBuffer[index + 2] = static_cast<uint8_t>(newCol.r);
 
-                float totalInvDist = inv1 + inv2 + inv3;
-
-                float colBlend[3] = {inv1 / totalInvDist, inv2 / totalInvDist, inv3 / totalInvDist};
-                Color newCol = lerpColor(col1, col2, col3, colBlend); // Ratio for each color to take
-
-                file.put(newCol.b);
-                file.put(newCol.g);
-                file.put(newCol.r);
-            }
-        }
-
-        //  Calculate flat top
-
-        m1 = (float)(v2.x - vi.x) / (v2.y - vi.y);
-        m2 = (float)(v2.x - v1.x) / (v2.y - v1.y);
-
-        for (int y = vi.y; y <= v2.y; y++)
-        { 
-
-            int xStart = vi.x + m1 * (y - vi.y);
-            int xEnd = v1.x + m2 * (y - v1.y);
-
-            if (xEnd < xStart)
-            {
-                std::swap(xStart, xEnd);
-            }
-
-            int correctedY = (infoHeader.height - 1) - y; // flip Y for BMP
-            for (int x = xStart; x <= xEnd; x++)
-            {
-
-                int rowSize = ((infoHeader.width * 3 + 3) / 4) * 4; // each row padded to multiple of 4
-                int index = header.dataOffset + correctedY * rowSize + static_cast<int>(x) * 3;
-                file.seekp(index, std::ios::beg);
-
-                //  Calculate color blending by distance to each vert
-                float dist1 = sqrt((v0.x - x) * (v0.x - x) + (v0.y - y) * (v0.y - y));
-                float dist2 = sqrt((v1.x - x) * (v1.x - x) + (v1.y - y) * (v1.y - y));
-                float dist3 = sqrt((v2.x - x) * (v2.x - x) + (v2.y - y) * (v2.y - y));
-
-                float inv1 = 1.0 / (dist1 + 1e-6f); // add epsilon to avoid div-by-zero
-                float inv2 = 1.0 / (dist2 + 1e-6f);
-                float inv3 = 1.0 / (dist3 + 1e-6f);
-
-                float totalInvDist = inv1 + inv2 + inv3;
-
-                float colBlend[3] = {inv1 / totalInvDist, inv2 / totalInvDist, inv3 / totalInvDist};
-                Color newCol = lerpColor(col1, col2, col3, colBlend); // Ratio for each color to take
-
-                file.put(newCol.b);
-                file.put(newCol.g);
-                file.put(newCol.r);
-            }
         }
     }
 }
 
-//  Linearly interpolate between vertices, including color and new pixel pos            -- CONVERT TO SCREEN COORDS BEFORE, THEN LERP
-void lerpVerts(Vertex vert1, Vertex vert2, std::string currentBuffer, InfoHeader &infoHeader, Header &header, std::fstream &file)
-{
-
-    // Edge 1
-
-    //  Lerp between two vertices
-
-    int y1 = vert1.y;
-    int y2 = vert2.y;
-    Color col1 = vert1.color;
-
-    int x1 = vert1.x;
-    int x2 = vert2.x;
-    Color col2 = vert2.color;
-
-    // Ensure x1 <= x2
-    if (x1 > x2)
-    {
-        std::swap(x1, x2);
-        std::swap(y1, y2);
-        std::swap(col2, col1);
-    }
-    float m = (y2 - y1) / (float)(x2 - x1);
-    float distX = x2 - x1;
-    float distY = y2 - y1;
-
-    //  Differences in colors
-    int redDiff = col2.r - col1.r;
-    int greenDiff = col2.g - col1.g;
-    int blueDiff = col2.b - col1.b;
-
-    if (distX == 0 && distY != 0)
-    {
-
-        for (int i = y1 + 1; i < y2; i++)
-        {
-            int newX = x1;
-            int newY = i;
-
-            int correctedY = (infoHeader.height - 1) - newY; // flip Y for BMP
-            int index = header.dataOffset + newX * 3 + (correctedY * 3 * infoHeader.width);
-            file.seekp(index, std::ios::beg);
-            file.put(col1.b + ((i - x1 + 1) * blueDiff) / distY);
-            file.put(col1.g + ((i - x1 + 1) * greenDiff) / distY);
-            file.put(col1.r + ((i - x1 + 1) * redDiff) / distY);
-        }
-    }
-    else
-    {
-        //  Not including already drawn
-        for (int i = x1 + 1; i < x2; i++)
-        {
-            int newX = i;
-            int newY = y1 + (m * (i - x1 + 1));
-
-            int correctedY = (infoHeader.height - 1) - newY; // flip Y for BMP
-            int index = header.dataOffset + newX * 3 + (correctedY * 3 * infoHeader.width);
-            file.seekp(index, std::ios::beg);
-            file.put(col1.b + ((i - x1 + 1) * blueDiff) / distX);
-            file.put(col1.g + ((i - x1 + 1) * greenDiff) / distX);
-            file.put(col1.r + ((i - x1 + 1) * redDiff) / distX);
-        }
-    }
-}

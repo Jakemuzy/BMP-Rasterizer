@@ -56,7 +56,20 @@ struct Mat4
 
 
         (*this) = (*this) * X * Y * Z;
+    }
 
+    void Mat4::setRotation(float angleX, float angleY, float angleZ) {
+        // Rotation matrices for each axis
+        Mat4 X, Y, Z;
+        X.ident(); Y.ident(); Z.ident();
+
+        // Set the rotation matrices for each axis
+        X.m22 = cos(angleX);    X.m33 = cos(angleX);    X.m23 = -sin(angleX);     X.m32 = sin(angleX);
+        Y.m11 = cos(angleY);    Y.m33 = cos(angleY);    Y.m13 = sin(angleY);      Y.m31 = -sin(angleY);
+        Z.m11 = cos(angleZ);    Z.m22 = cos(angleZ);    Z.m12 = -sin(angleZ);     Z.m21 = sin(angleZ);
+
+        // Set the matrix to the result of the rotations (X * Y * Z)
+        *this = X * Y * Z;
     }
 
     void Mat4::translate(float x, float y, float z){
@@ -127,9 +140,11 @@ void ndcToScreen(Vec4& vertex, const InfoHeader& infoHeader)
 {
     vertex.x += 1;
     vertex.y += 1;
+    vertex.z += 1;
 
     vertex.x /= 2;
     vertex.y /= 2;
+    vertex.z /= 2;
 
     vertex.x *= infoHeader.width;
     vertex.y *= infoHeader.height;

@@ -20,11 +20,11 @@ int main()
     isBigEndian();
 
     //  Buffers
-    std::ofstream buffer1("dependencies/textures/buffer1.bmp", std::ios::binary);
-    std::ofstream buffer2("dependencies/textures/buffer2.bmp", std::ios::binary);
-    std::ofstream buffer3("dependencies/textures/buffer3.bmp", std::ios::binary);
+    std::fstream buffer1("dependencies/textures/buffer1.bmp", std::ios::binary);
+    std::fstream buffer2("dependencies/textures/buffer2.bmp", std::ios::binary);
+    std::fstream buffer3("dependencies/textures/buffer3.bmp", std::ios::binary);
 
-    std::ofstream depthMap("dependencies/textures/depthMap.bmp", std::ios::binary);
+    std::fstream depthMap("dependencies/textures/depthMap.bmp", std::ios::binary | std::ios::in | std::ios::out);
     std::string currentBufferFilename = "dependencies/textures/buffer1.bmp";
 
     //  Specifies what I want from the bmp
@@ -48,6 +48,9 @@ int main()
     buffer2.close();
     writeInfoBMP(header, infoHeader, colorTable, buffer3);
     buffer3.close();
+
+    writeInfoBMP(header, infoHeader, colorTable, depthMap);
+    depthMap.close();
 
     // Window display
 
@@ -89,70 +92,96 @@ int main()
     // Define 12 triangles (two per face)
 
     // Front face (z = 0.5)
-    Triangle t1 = {v4, v5, v6};
-    Triangle t2 = {v4, v6, v7};
+    Triangle t1 = {v4, v5, v6}; 
+    Triangle t2 = {v4, v6, v7}; 
 
     // Back face (z = -0.5)
-    Triangle t3 = {v0, v2, v1};
-    Triangle t4 = {v0, v3, v2};
+    Triangle t3 = {v0, v1, v2}; 
+    Triangle t4 = {v0, v2, v3}; 
 
     // Left face (x = -0.5)
-    Triangle t5 = {v0, v4, v7};
-    Triangle t6 = {v0, v7, v3};
+    Triangle t5 = {v0, v7, v4}; 
+    Triangle t6 = {v0, v3, v7};
 
     // Right face (x = 0.5)
-    Triangle t7 = {v1, v2, v6};
-    Triangle t8 = {v1, v6, v5};
+    Triangle t7 = {v1, v6, v2}; 
+    Triangle t8 = {v1, v5, v6};
 
     // Top face (y = 0.5)
-    Triangle t9 = {v3, v7, v6};
-    Triangle t10 = {v3, v6, v2};
+    Triangle t9 = {v3, v7, v6};  
+    Triangle t10 = {v3, v6, v2}; 
 
     // Bottom face (y = -0.5)
-    Triangle t11 = {v0, v1, v5};
-    Triangle t12 = {v0, v5, v4};
+    Triangle t11 = {v0, v5, v1};
+    Triangle t12 = {v0, v4, v5}; 
 
     // Add to vector
     std::vector<Triangle> cubeTriangles = {
-        t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12
-    };
+        t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12};
+
+    // Define 5 pyramid vertices
+    Vertex base0 = {-0.5f, -0.5f, 0.0f, StandardColors::Cyan};  // Bottom-left
+    Vertex base1 = {0.5f, -0.5f, 0.0f, StandardColors::Blue};   // Bottom-right
+    Vertex base2 = {0.5f, 0.5f, 0.0f, StandardColors::Green};   // Top-right
+    Vertex base3 = {-0.5f, 0.5f, 0.0f, StandardColors::Violet}; // Top-left
+    Vertex apex = {0.0f, 0.0f, 1.0f, StandardColors::Red};      // Apex (center above base)
+
+    // Define 2 base triangles (square base)
+    Triangle b1 = {base0, base1, base2};
+    Triangle b2 = {base0, base2, base3};
+
+    // Define 4 side triangles (triangular faces)
+    Triangle s1 = {base0, base1, apex}; // Front face
+    Triangle s2 = {base1, base2, apex}; // Right face
+    Triangle s3 = {base2, base3, apex}; // Back face
+    Triangle s4 = {base3, base0, apex}; // Left face
+
+    // Add to vector
+    std::vector<Triangle> pyramidTriangles = {
+        b1, b2, s1, s2, s3, s4};
 
     //  Linear Algebra
+    float zNear = 0.001f, zFar = 20.0f;
     Mat4 model, view, projection;
-    model.ident(); model.scale(5.0f, 5.0f, 5.0f);   model.translate(0, 0, 15);
+    model.ident(); model.scale(0.5f, 0.5f, 0.5f);  
     view.ident(); 
-    projection.perspective(60, infoHeader.width / infoHeader.height, 0.1f, 10);
+    projection.perspective(60, infoHeader.width / infoHeader.height, zNear, zFar);
+
+    //  Image buffer and depth buffer
+
+    std::vector<uint8_t> framebuffer = {}; 
+    std::vector<uint8_t> zBuffer = {};
+
+    framebuffer.resize(infoHeader.width * infoHeader.height * 3);
+    zBuffer.resize(infoHeader.width * infoHeader.height);
 
     //  Rewrite file every frame
     while (!window.is_closed())
     {
-        std::fstream file(currentBufferFilename, std::ios::binary | std::ios::in | std::ios::out);
-        int offset = header.dataOffset; //  Start editing after 54 bytes (header info)
-        file.seekp(offset, std::ios::beg);
 
         // White backdrop
         for (int y = infoHeader.height - 1; y >= 0; --y)
         {
-
             for (int x = 0; x < infoHeader.width; ++x)
             {
+                
+                int zIndex = y * infoHeader.width + x;
+                int byteIndex = zIndex * 3;
+
                 //  White background
-                file.put(255);
-                file.put(255);
-                file.put(255);
+                framebuffer[byteIndex + 0] = static_cast<uint8_t>(255);
+                framebuffer[byteIndex + 1] = static_cast<uint8_t>(255);
+                framebuffer[byteIndex + 2] = static_cast<uint8_t>(255);
+
+                //  Write 0 to depth map
+                zBuffer[zIndex] = 0;
             }
 
-            // Add row padding if needed
-            char padding[4] = {0};
-            if (rowPadding > 0)
-            {
-                std::cout << "padded";
-                file.write(padding, rowPadding);
-            }
         }
 
+        //  Calculate screen rendering every frame
         model.rotate(0.15, 0.1, 0);                 //      CREATE DEPTH MAP SAMPLE IT, then INCREASE IMAGE RESOLUTOIN, also fix problem when lines are near horizontal
-        for (auto &tri : cubeTriangles)
+        for (auto &tri : cubeTriangles)             //      ALSO NEED TO INTERPOLATE Z VALUES FOR DEPTH MAP
         {
             //  Converts world space to clip space
             Triangle screenTriangle;
@@ -174,14 +203,53 @@ int main()
             screenTriangle.vert1 = {vert1.x, vert1.y, vert1.z, tri.vert1.color};
             screenTriangle.vert2 = {vert2.x, vert2.y, vert2.z, tri.vert2.color};
             screenTriangle.vert3 = {vert3.x, vert3.y, vert3.z, tri.vert3.color};
-            // std::cout << vert1.x << " " << vert1.y << "\n" <<  vert2.x << " " << vert2.y << "\n" << vert3.x << " " << vert3.y << "\n\n";
 
             //  Rasterize the triangles
-            lerpFillTriangle(screenTriangle, currentBufferFilename, infoHeader, header, file);
+            lerpFillTriangle(screenTriangle, infoHeader, header, framebuffer, zBuffer, zNear, zFar);
         }
 
-        file.flush();
+        //  Start editing after 54 bytes (header info)
+        int offset = header.dataOffset; 
+
+        std::fstream file(currentBufferFilename, std::ios::in | std::ios::out | std::ios::binary);
+        file.seekp(offset); file.seekg(offset);
+
+        std::fstream depthMap("dependencies/textures/depthMap.bmp", std::ios::binary | std::ios::in | std::ios::out);
+        depthMap.seekp(offset);
+        depthMap.seekg(offset);
+
+        // Start writing from buffer to actual file
+        for (int y = infoHeader.height - 1; y >= 0; --y)
+        {
+            int correctedY = (infoHeader.height - 1) - y; // flip Y for BMP
+
+            for (int x = 0; x < infoHeader.width; ++x)
+            {
+                int zIndex = correctedY * infoHeader.width + x;
+                int byteIndex = zIndex * 3;
+
+                //  White background
+                file.put(framebuffer[byteIndex + 0]);
+                file.put(framebuffer[byteIndex + 1]);
+                file.put(framebuffer[byteIndex + 2]);
+
+                //  Write 0 to depth map
+                depthMap.put(zBuffer[zIndex]);
+                depthMap.put(zBuffer[zIndex]);
+                depthMap.put(zBuffer[zIndex]); 
+            }
+
+            // Add row padding if needed
+            char padding[4] = {0};
+            if (rowPadding > 0)
+            {
+                file.write(padding, rowPadding);
+                depthMap.write(padding, rowPadding);
+            }
+        }
+
         file.close();
+        depthMap.close();
 
         //  Switch Buffers
 
@@ -202,9 +270,10 @@ int main()
 
         //  Change the image
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(1));
         window.display(image);
         window.wait(1);
     }
+    depthMap.close();
     return 0;
 }

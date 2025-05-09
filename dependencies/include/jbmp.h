@@ -40,7 +40,7 @@ struct ColorTable
 #pragma pack(pop)
 
 //  Parses the struct and returns the output to filestream
-void writeInfoBMP(Header header, InfoHeader infoHeader, ColorTable colorTable, std::ofstream &file)
+void writeInfoBMP(Header header, InfoHeader infoHeader, ColorTable colorTable, std::fstream &file)
 {
     // Write header (14 bytes)
     file.write(reinterpret_cast<char *>(&header.signature), sizeof(header.signature));
