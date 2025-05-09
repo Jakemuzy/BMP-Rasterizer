@@ -1,6 +1,7 @@
 <h2>This Application comes with custom features fully implemented by myself, no outside libraries</h2>  
     
 Utilizing BMPs to act as a sort of virtual screen, I have replicated the rasterization process that 3d graphics software achieves    
+  
 1.) Allows creation and modification of bmp files  
 2.) Displays the bmp file updating every frame 
 3.) Allows for the projection of 3d points onto the 2d screen space that is the bmp file 
