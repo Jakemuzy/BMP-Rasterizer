@@ -15,6 +15,16 @@
 
 using namespace cimg_library;
 
+void isBigEndian()
+{
+    uint16_t num = 1;
+    if (*(reinterpret_cast<uint8_t *>(&num)) == 0)
+    {
+        std::cout << "System is Big Endian: Program will not function correclty\n";
+        std::abort();
+    }
+}
+
 int main()
 {
 
@@ -70,63 +80,64 @@ int main()
     CImgDisplay window(image, "Image", 0);
     window.move(0 + 500, 0 + 200);
 
+    // Define 24 vertices (3 per face)
+    Vertex v0 = {-0.5f, -0.5f, 0.5f, StandardColors::Red, 0.0f, 0.0f};
+    Vertex v1 = {0.5f, -0.5f, 0.5f, StandardColors::Orange, 1.0f, 0.0f};
+    Vertex v2 = {0.5f, 0.5f, 0.5f, StandardColors::Yellow, 1.0f, 1.0f};
+    Vertex v3 = {-0.5f, 0.5f, 0.5f, StandardColors::Green, 0.0f, 1.0f};
 
-    //  Vertices / Triangles
-    Vertex Test1 = {5, 5, 5, StandardColors::Red, std::optional<float>(1.0f), std::optional<float>(1.0f)};
-    Vertex Test2 = {30, 15, 5, StandardColors::Green, std::optional<float>(1.0f), std::optional<float>(1.0f)};
-    Vertex Test3 = {15, 30, 5, StandardColors::Blue, std::optional<float>(1.0f), std::optional<float>(1.0f)};
+    // BACK FACE
+    Vertex v4 = {0.5f, -0.5f, -0.5f, StandardColors::Cyan, 0.0f, 0.0f};
+    Vertex v5 = {-0.5f, -0.5f, -0.5f, StandardColors::Blue, 1.0f, 0.0f};
+    Vertex v6 = {-0.5f, 0.5f, -0.5f, StandardColors::Purple, 1.0f, 1.0f};
+    Vertex v7 = {0.5f, 0.5f, -0.5f, StandardColors::Violet, 0.0f, 1.0f};
 
-    Vertex Test4 = {55, 25, 5, StandardColors::Orange, std::optional<float>(1.0f), std::optional<float>(1.0f)};
-    Vertex Test5 = {85, 45, 5, StandardColors::Cyan, std::optional<float>(1.0f), std::optional<float>(1.0f)};
-    Vertex Test6 = {65, 5, 5, StandardColors::Violet, std::optional<float>(1.0f), std::optional<float>(1.0f)};
+    // LEFT FACE
+    Vertex v8 = {-0.5f, -0.5f, -0.5f, StandardColors::Red, 0.0f, 0.0f};
+    Vertex v9 = {-0.5f, -0.5f, 0.5f, StandardColors::Orange, 1.0f, 0.0f};
+    Vertex v10 = {-0.5f, 0.5f, 0.5f, StandardColors::Yellow, 1.0f, 1.0f};
+    Vertex v11 = {-0.5f, 0.5f, -0.5f, StandardColors::Green, 0.0f, 1.0f};
 
-    Vertex Test7 = {35, 35, 5, StandardColors::Purple, std::optional<float>(1.0f), std::optional<float>(1.0f)};
-    Vertex Test8 = {55, 45, 5, StandardColors::Yellow, std::optional<float>(1.0f), std::optional<float>(1.0f)};
-    Vertex Test9 = {25, 75, 5, StandardColors::Green, std::optional<float>(1.0f), std::optional<float>(1.0f)};
+    // RIGHT FACE
+    Vertex v12 = {0.5f, -0.5f, 0.5f, StandardColors::Cyan, 0.0f, 0.0f};
+    Vertex v13 = {0.5f, -0.5f, -0.5f, StandardColors::Blue, 1.0f, 0.0f};
+    Vertex v14 = {0.5f, 0.5f, -0.5f, StandardColors::Purple, 1.0f, 1.0f};
+    Vertex v15 = {0.5f, 0.5f, 0.5f, StandardColors::Violet, 0.0f, 1.0f};
 
-    Triangle tri = {Test1, Test2, Test3};
-    Triangle tri2 = {Test4, Test5, Test6};
-    Triangle tri3 = {Test7, Test8, Test9};
-    std::vector<Triangle> triangles = {tri, tri2, tri3};
+    // TOP FACE
+    Vertex v16 = {-0.5f, 0.5f, 0.5f, StandardColors::Red, 0.0f, 0.0f};
+    Vertex v17 = {0.5f, 0.5f, 0.5f, StandardColors::Orange, 1.0f, 0.0f};
+    Vertex v18 = {0.5f, 0.5f, -0.5f, StandardColors::Yellow, 1.0f, 1.0f};
+    Vertex v19 = {-0.5f, 0.5f, -0.5f, StandardColors::Green, 0.0f, 1.0f};
 
-    // Define 8 cube vertices (all Black)
-    Vertex v0 = {-0.5f, -0.5f, -0.5f, StandardColors::Red};   // Bottom-back-left
-    Vertex v1 = {0.5f, -0.5f, -0.5f, StandardColors::Orange}; // Bottom-back-right
-    Vertex v2 = {0.5f, 0.5f, -0.5f, StandardColors::Yellow};  // Top-back-right
-    Vertex v3 = {-0.5f, 0.5f, -0.5f, StandardColors::Green};  // Top-back-left
-    Vertex v4 = {-0.5f, -0.5f, 0.5f, StandardColors::Cyan};   // Bottom-front-left
-    Vertex v5 = {0.5f, -0.5f, 0.5f, StandardColors::Blue};    // Bottom-front-right
-    Vertex v6 = {0.5f, 0.5f, 0.5f, StandardColors::Purple};   // Top-front-right
-    Vertex v7 = {-0.5f, 0.5f, 0.5f, StandardColors::Violet};  // Top-front-left
+    // BOTTOM FACE
+    Vertex v20 = {-0.5f, -0.5f, -0.5f, StandardColors::Cyan, 0.0f, 0.0f};
+    Vertex v21 = {0.5f, -0.5f, -0.5f, StandardColors::Blue, 1.0f, 0.0f};
+    Vertex v22 = {0.5f, -0.5f, 0.5f, StandardColors::Purple, 1.0f, 1.0f};
+    Vertex v23 = {-0.5f, -0.5f, 0.5f, StandardColors::Violet, 0.0f, 1.0f};
 
-    // Define 12 triangles (two per face)
+    // Each face: two triangles (0-1-2 and 0-2-3 pattern)
+    Triangle front1 = {v0, v1, v2};
+    Triangle front2 = {v0, v2, v3};
 
-    // Front face (z = 0.5)
-    Triangle t1 = {v4, v5, v6}; 
-    Triangle t2 = {v4, v6, v7}; 
+    Triangle back1 = {v4, v5, v6};
+    Triangle back2 = {v4, v6, v7};
 
-    // Back face (z = -0.5)
-    Triangle t3 = {v0, v1, v2}; 
-    Triangle t4 = {v0, v2, v3}; 
+    Triangle left1 = {v8, v9, v10};
+    Triangle left2 = {v8, v10, v11};
 
-    // Left face (x = -0.5)
-    Triangle t5 = {v0, v7, v4}; 
-    Triangle t6 = {v0, v3, v7};
+    Triangle right1 = {v12, v13, v14};
+    Triangle right2 = {v12, v14, v15};
 
-    // Right face (x = 0.5)
-    Triangle t7 = {v1, v6, v2}; 
-    Triangle t8 = {v1, v5, v6};
+    Triangle top1 = {v16, v17, v18};
+    Triangle top2 = {v16, v18, v19};
 
-    // Top face (y = 0.5)
-    Triangle t9 = {v3, v7, v6};  
-    Triangle t10 = {v3, v6, v2}; 
+    Triangle bottom1 = {v20, v21, v22};
+    Triangle bottom2 = {v20, v22, v23};
 
-    // Bottom face (y = -0.5)
-    Triangle t11 = {v0, v5, v1};
-    Triangle t12 = {v0, v4, v5}; 
-
+    // Store all triangles for cube faces
     std::vector<Triangle> cubeTriangles = {
-        t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12
+        front1, front2, back1, back2, left1, left2, right1, right2, top1, top2, bottom1, bottom2
     };
 
     //  Linear Algebra
@@ -137,29 +148,38 @@ int main()
     projection.perspective(60, infoHeader.width / infoHeader.height, zNear, zFar);
 
     //  Image buffer and depth buffer
-    std::vector<uint8_t> framebuffer = {}; 
-    std::vector<uint8_t> zBuffer = {};
-    framebuffer.resize(infoHeader.width * infoHeader.height * 3);
-    zBuffer.resize(infoHeader.width * infoHeader.height * 3);
+    std::vector<uint8_t> frameBuffer = {}; 
+    std::vector<uint8_t> depthBuffer = {};
+    frameBuffer.resize(infoHeader.width * infoHeader.height * 3);
+    depthBuffer.resize(infoHeader.width * infoHeader.height * 3);
 
     //  Texture image in a buffer
-    std::vector<uint8_t> tex1 = {};
+    std::vector<uint8_t> tex1;
+    int texWidth = 500, texHeight = 500;
+    readBMP("dependencies/textures/stoneBrick2.bmp", tex1, texWidth, texHeight);
 
     //  Input Handler
     InputHandler inputHandler(WINDOWS);
     MovementController movementController(inputHandler, view, deltaTime);
+
+    //  Rasterizer
+    Rasterizer::useInterpolation(true);
+    Rasterizer::useTextureMapping(true);
+    Rasterizer::useLighting(false);
+
+    Rasterizer::attachFramebuffer(frameBuffer);
+    Rasterizer::attachDepthBuffer(depthBuffer);
+    Rasterizer::setTextureMap(tex1, texWidth, texHeight);
 
     //  Rewrite file every frame
     while (!window.is_closed() && !inputHandler.getInputs().esc)
     {
         start = std::chrono::high_resolution_clock::now();
 
-        //  Resets framebuffer and zB
-        std::fill(framebuffer.begin(), framebuffer.end(), 255);
-        std::fill(zBuffer.begin(), zBuffer.end(), 0);
+        Rasterizer::clearScreen();
 
         //  Movement
-        model.rotate(1.5 * deltaTime, 1.0 * deltaTime, 0);
+        model.rotate(0.75 * deltaTime, 0.5 * deltaTime, 0);
         movementController.move();
 
         //  Calculate screen rendering every frame
@@ -168,9 +188,15 @@ int main()
             //  Converts world space to clip space
             Triangle screenTriangle;
 
-            Vec4 vert1 = (projection * view * model * tri.vert1);
-            Vec4 vert2 = (projection * view * model * tri.vert2);
-            Vec4 vert3 = (projection * view * model * tri.vert3);
+            //  Precomupte Values for perspective correction
+
+            Vec4 viewSpacePos1 = view * model * tri.vert1;
+            Vec4 viewSpacePos2 = view * model * tri.vert2;
+            Vec4 viewSpacePos3 = view * model * tri.vert3;
+
+            Vec4 vert1 = projection * viewSpacePos1;
+            Vec4 vert2 = projection * viewSpacePos2;
+            Vec4 vert3 = projection * viewSpacePos3;
 
             //  Convert clip space to NDC to screen space
 
@@ -182,28 +208,27 @@ int main()
             ndcToScreen(vert2, infoHeader);
             ndcToScreen(vert3, infoHeader);
 
-            screenTriangle.vert1 = {vert1.x, vert1.y, vert1.z, tri.vert1.color};
-            screenTriangle.vert2 = {vert2.x, vert2.y, vert2.z, tri.vert2.color};
-            screenTriangle.vert3 = {vert3.x, vert3.y, vert3.z, tri.vert3.color};
+            //  For perspective correction with tex coordinates
+            screenTriangle.vert1 = {vert1.x, vert1.y, vert1.z, tri.vert1.color, tri.vert1.texX, tri.vert1.texY};
+            screenTriangle.vert1.invZ = 1.0f / vert1.w;
+            screenTriangle.vert1.texX_divZ = tri.vert1.texX.value() / vert1.w;
+            screenTriangle.vert1.texY_divZ = tri.vert1.texY.value() / vert1.w;
+
+            screenTriangle.vert2 = {vert2.x, vert2.y, vert2.z, tri.vert2.color, tri.vert2.texX, tri.vert2.texY};
+            screenTriangle.vert2.invZ = 1.0f / vert2.w;
+            screenTriangle.vert2.texX_divZ = tri.vert2.texX.value() / vert2.w;
+            screenTriangle.vert2.texY_divZ = tri.vert2.texY.value() / vert2.w;
+
+            screenTriangle.vert3 = {vert3.x, vert3.y, vert3.z, tri.vert3.color, tri.vert3.texX, tri.vert3.texY};
+            screenTriangle.vert3.invZ = 1.0f / vert3.w;
+            screenTriangle.vert3.texX_divZ = tri.vert3.texX.value() / vert3.w;
+            screenTriangle.vert3.texY_divZ = tri.vert3.texY.value() / vert3.w;
 
             //  Rasterize the triangles
-            lerpFillTriangle(screenTriangle, infoHeader, header, framebuffer, zBuffer, tex1, zNear, zFar);
+            Rasterizer::drawTriangle(screenTriangle, infoHeader, header, zNear, zFar);
         }
 
-        //  Start editing after 54 bytes (header info)
-        int offset = header.dataOffset; 
-
-        std::fstream file(currentBufferFilename, std::ios::in | std::ios::out | std::ios::binary);
-        file.seekp(offset); file.seekg(offset);
-        file.write(reinterpret_cast<const char *>(framebuffer.data()), framebuffer.size());
-
-        std::fstream depthMap("dependencies/frames/depthMap.bmp", std::ios::binary | std::ios::in | std::ios::out);
-        depthMap.seekp(offset); depthMap.seekg(offset);
-        depthMap.write(reinterpret_cast<const char *>(zBuffer.data()), zBuffer.size());
-        depthMap.write(reinterpret_cast<const char*>(framebuffer.data()), framebuffer.size());
-
-        file.close();
-        depthMap.close();
+        Rasterizer::updateScreen(currentBufferFilename, header, infoHeader);
 
         //  Switch Buffers
 
@@ -227,7 +252,6 @@ int main()
         window.wait(1);
 
         //  Delta Time
-
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         deltaTime = duration.count() / 1000.0f;     //  Seconds

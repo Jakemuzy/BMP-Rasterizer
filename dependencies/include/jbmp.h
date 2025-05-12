@@ -70,3 +70,22 @@ void writeInfoBMP(Header header, InfoHeader infoHeader, ColorTable colorTable, s
     }
     */
 }
+
+void readBMP(std::string fileName, std::vector<uint8_t>& bmpData, int& width, int& height)
+{
+    std::fstream file(fileName, std::ios::in | std::ios::binary);
+
+    if(!file)
+    {
+        std::cerr << "BMP ERROR: File doesn't exist to read from";
+    }
+
+    file.seekg(18);
+    file.read(reinterpret_cast<char *>(&width), 4);
+    file.read(reinterpret_cast<char *>(&height), 4);
+
+    file.seekg(54);
+
+    bmpData.resize(width * height * 3);
+    file.read(reinterpret_cast<char *>(bmpData.data()), bmpData.size());
+}
