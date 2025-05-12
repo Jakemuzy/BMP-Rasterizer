@@ -1,4 +1,4 @@
-<h2>This Application comes with custom features fully implemented by myself, no outside libraries</h2>  
+<h2>This Application comes with custom features fully implemented by myself</h2>  
   
 Utilizing BMPs to act as a sort of virtual screen, I have replicated the rasterization process that 3d graphics software achieves    
   
@@ -10,8 +10,6 @@ Utilizing BMPs to act as a sort of virtual screen, I have replicated the rasteri
 6.) Utilizes frame buffer and depth buffer for better performance  
 7.) Supports texturing mapping onto triangles  
   
-Utilizing BMPs to act as a sort of virtual screen, I have replicated the rasterization process that 3d graphics software achieves
-
 <h2>Examples</h2>  
 
 
