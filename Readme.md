@@ -1,4 +1,4 @@
-<h2>This Custom 3D Renderer and CPU Rasterizer with features fully implemented by myself</h2>  
+<h2>Custom 3D Renderer and CPU Rasterizer with features fully implemented by myself</h2>  
   
 Utilizing BMPs to act as a sort of virtual screen, I have replicated the rasterization process that 3d graphics software achieves    
   
