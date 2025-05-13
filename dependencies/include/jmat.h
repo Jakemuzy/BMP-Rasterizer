@@ -119,20 +119,6 @@ struct Mat4
         return New;
     };
 
-    //  Assume vertex is vec4 with 4th value of 1
-    
-    Vec4 operator*(const Vertex& other) const {
-        Vec4 vertex = {other.x, other.y, other.z, 1.0};
-
-        Vec4 New;
-        New.x = m11 * vertex.x + m12 * vertex.y + m13 * vertex.z + m14 * vertex.w;
-        New.y = m21 * vertex.x + m22 * vertex.y + m23 * vertex.z + m24 * vertex.w;
-        New.z = m31 * vertex.x + m32 * vertex.y + m33 * vertex.z + m34 * vertex.w;
-        New.w = m41 * vertex.x + m42 * vertex.y + m43 * vertex.z + m44 * vertex.w;
-
-        return New;
-    }
-
     Vec4 operator*(const Vec4& other) const {
         Vec4 New;
 

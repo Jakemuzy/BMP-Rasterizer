@@ -1,0 +1,75 @@
+
+//  Texture Calculations
+
+/*
+void mapTexture(Vertex v0, std::vector<uint8_t>& texImage, InfoHeader& infoHeader){
+    float width = infoHeader.width;
+    float height = texImage.size() /= infoHeader.width
+
+    float ratio = infoHeader.width /= width
+    v0.texX
+}
+
+*/
+
+//  Lighting Calculations
+
+/*
+    1.) Have a triangle, each vertex with an optional normal value and optional TexCoords
+    2.)
+
+    Main Code
+
+        bool flags interpolateColors, texMap, normals;
+
+        Vertex(Vec3 Pos, Vec3 Normal, Vec3 Texture);    Normal and Tex are optoinal
+
+        Vertex::InterpolateColors(true);
+        Vertex::TexMap(true);
+        Vertex::Normals(true)
+
+    Vertex Processer Code
+
+        static class VertexProcces()
+        {
+            private:
+                bool flags interpolateColors, texMap, normals;
+
+            public:
+
+            //Flags
+                void InterpolateColors(bool value)
+                {
+                    interpolateColors = true;
+                }
+
+                void TexMap(bool value) 
+                {
+                    texMap = true;
+                }
+
+                void normals(bool value)
+                {
+                    normals = true;
+                }
+
+            //Functions
+                void processVertex(Triangle tri, Buffer frameBuffer, Buffer, depthBuffer)
+                {
+
+                }
+
+        }
+
+    Process
+        1.) Check Flags
+            1a.)    if(interpCol) then
+                1aa.)   if(texMap) then combine colors and texmap
+            1b.)    if(texMap) then do texture mapping
+            1c.)    if(normals) then ALWAYS do lighting calculations 
+        2.) Depending on flags do differnet interpolation functions
+            2a.)    if(texMap && )
+
+
+
+*/

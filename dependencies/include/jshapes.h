@@ -1,3 +1,80 @@
+
+struct Color
+{
+    float r;
+    float g;
+    float b;
+
+    Color operator*(float scale) const
+    {
+        Color newCol;
+
+        newCol.r = r * scale;
+        newCol.g = g * scale;
+        newCol.b = b * scale;
+
+        return newCol;
+    }
+
+    Color operator+(const Color &other) const
+    {
+        Color newCol;
+
+        newCol.r = r + other.r;
+        newCol.g = g + other.g;
+        newCol.b = b + other.b;
+
+        return newCol;
+    }
+
+    friend Color operator*(float scale, const Color &color)
+    {
+        return color * scale;
+    }
+};
+
+//  Colors
+namespace StandardColors
+{
+    constexpr Color Black = {0, 0, 0};
+    constexpr Color White = {255, 255, 255};
+    constexpr Color Red = {255, 0, 0};
+    constexpr Color Orange = {255, 127, 0};
+    constexpr Color Yellow = {255, 255, 0};
+    constexpr Color Green = {0, 255, 0};
+    constexpr Color Cyan = {0, 255, 255};
+    constexpr Color Blue = {0, 0, 255};
+    constexpr Color Purple = {128, 0, 128};
+    constexpr Color Violet = {148, 0, 211};
+    constexpr Color Teal = {0, 128, 128};
+
+    // New colors
+    constexpr Color LightPink = {255, 182, 193};        // Light Pink
+    constexpr Color LightCoral = {240, 128, 128};       // Light Coral
+    constexpr Color PeachPuff = {255, 218, 185};        // Peach Puff
+    constexpr Color PaleGreen = {152, 251, 152};        // Pale Green
+    constexpr Color Aquamarine = {127, 255, 212};       // Aquamarine
+    constexpr Color MediumPurple = {147, 112, 219};     // Medium Purple
+    constexpr Color Plum = {221, 160, 221};             // Plum
+    constexpr Color SlateBlue = {106, 90, 205};         // Slate Blue
+    constexpr Color LightSkyBlue = {135, 206, 250};     // Light Sky Blue
+    constexpr Color LightGreen = {144, 238, 144};       // Light Green
+    constexpr Color MediumSeaGreen = {60, 179, 113};    // Medium Sea Green
+    constexpr Color LimeGreen = {50, 205, 50};          // Lime Green
+    constexpr Color CornflowerBlue = {100, 149, 237};   // Cornflower Blue
+    constexpr Color DarkOliveGreen = {85, 107, 47};     // Dark Olive Green
+    constexpr Color RoyalBlue = {65, 105, 225};         // Royal Blue
+    constexpr Color SteelBlue = {70, 130, 180};         // Steel Blue
+    constexpr Color PaleTurquoise = {175, 238, 238};    // Pale Turquoise
+    constexpr Color SkyBlue = {135, 206, 235};          // Sky Blue
+    constexpr Color MediumAquamarine = {102, 205, 170}; // Medium Aquamarine
+    constexpr Color Turquoise = {64, 224, 208};         // Turquoise
+    constexpr Color DarkTurquoise = {0, 206, 209};      // Dark Turquoise
+    constexpr Color CadetBlue = {95, 158, 160};         // Cadet Blue
+    constexpr Color LightSeaGreen = {32, 178, 170};     // Light Sea Green
+    constexpr Color MediumTurquoise = {72, 209, 204};   // Medium Turquoise
+}
+
 /*
 // Define 5 pyramid vertices
     Vertex base0 = {-0.5f, -0.5f, 0.0f, StandardColors::Cyan};  // Bottom-left

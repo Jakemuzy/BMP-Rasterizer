@@ -8,9 +8,10 @@
 #include <CImg.h>   //  OUTSOURCED for bmp image preview
 
 #include <InputHandler.h>   //  Custom built input library
+#include <jshapes.h> //  Custom built shapes and colors library
 #include <jbmp.h>    //  Custom built bmp library
-#include <jrast.h>   //  Custom built rasterizer library
 #include <jmat.h>    //  Custom built math library
+#include <jrast.h>   //  Custom built rasterizer library
 #include <MovementController.h>  //Custom built movement library
 
 using namespace cimg_library;
@@ -56,8 +57,8 @@ int main()
     InfoHeader infoHeader;
     ColorTable colorTable;
 
-    infoHeader.width = 300;
-    infoHeader.height = 300;
+    infoHeader.width = 400;
+    infoHeader.height = 400;
 
     int rowPadding = (4 - (infoHeader.width * 3) % 4) % 4;           // Ensure each row is a multiple of 4 bytes
     infoHeader.imageSize = infoHeader.width * infoHeader.height * 3; 
@@ -76,45 +77,41 @@ int main()
 
     // Window display for bmp file
     CImg<unsigned char> image;
-    image.resize(infoHeader.width * 2, infoHeader.height * 2);
+    image.resize(infoHeader.width * 1.5, infoHeader.height * 1.5);
     CImgDisplay window(image, "Image", 0);
-    window.move(0 + 500, 0 + 200);
+    window.move(0 + 400, 0 + 200);
 
     // Define 24 vertices (3 per face)
-    Vertex v0 = {-0.5f, -0.5f, 0.5f, StandardColors::Red, 0.0f, 0.0f};
-    Vertex v1 = {0.5f, -0.5f, 0.5f, StandardColors::Orange, 1.0f, 0.0f};
-    Vertex v2 = {0.5f, 0.5f, 0.5f, StandardColors::Yellow, 1.0f, 1.0f};
-    Vertex v3 = {-0.5f, 0.5f, 0.5f, StandardColors::Green, 0.0f, 1.0f};
+    // Define 24 vertices (3 per face, corners reuse colors)
+    Vertex v0 = {-0.5f, -0.5f, 0.5f, StandardColors::Red, 0.0f, 0.0f};   
+    Vertex v1 = {0.5f, -0.5f, 0.5f, StandardColors::Orange, 1.0f, 0.0f}; 
+    Vertex v2 = {0.5f, 0.5f, 0.5f, StandardColors::Yellow, 1.0f, 1.0f};  
+    Vertex v3 = {-0.5f, 0.5f, 0.5f, StandardColors::Green, 0.0f, 1.0f}; 
 
-    // BACK FACE
-    Vertex v4 = {0.5f, -0.5f, -0.5f, StandardColors::Cyan, 0.0f, 0.0f};
-    Vertex v5 = {-0.5f, -0.5f, -0.5f, StandardColors::Blue, 1.0f, 0.0f};
-    Vertex v6 = {-0.5f, 0.5f, -0.5f, StandardColors::Purple, 1.0f, 1.0f};
-    Vertex v7 = {0.5f, 0.5f, -0.5f, StandardColors::Violet, 0.0f, 1.0f};
+    Vertex v4 = {0.5f, -0.5f, -0.5f, StandardColors::Cyan, 0.0f, 0.0f};  
+    Vertex v5 = {-0.5f, -0.5f, -0.5f, StandardColors::Blue, 1.0f, 0.0f};  
+    Vertex v6 = {-0.5f, 0.5f, -0.5f, StandardColors::Purple, 1.0f, 1.0f}; 
+    Vertex v7 = {0.5f, 0.5f, -0.5f, StandardColors::Violet, 0.0f, 1.0f};  
 
-    // LEFT FACE
-    Vertex v8 = {-0.5f, -0.5f, -0.5f, StandardColors::Red, 0.0f, 0.0f};
-    Vertex v9 = {-0.5f, -0.5f, 0.5f, StandardColors::Orange, 1.0f, 0.0f};
-    Vertex v10 = {-0.5f, 0.5f, 0.5f, StandardColors::Yellow, 1.0f, 1.0f};
-    Vertex v11 = {-0.5f, 0.5f, -0.5f, StandardColors::Green, 0.0f, 1.0f};
+    Vertex v8 = {-0.5f, -0.5f, -0.5f, StandardColors::Blue, 0.0f, 0.0f};
+    Vertex v9 = {-0.5f, -0.5f, 0.5f, StandardColors::Red, 1.0f, 0.0f};
+    Vertex v10 = {-0.5f, 0.5f, 0.5f, StandardColors::Green, 1.0f, 1.0f};
+    Vertex v11 = {-0.5f, 0.5f, -0.5f, StandardColors::Purple, 0.0f, 1.0f};
 
-    // RIGHT FACE
-    Vertex v12 = {0.5f, -0.5f, 0.5f, StandardColors::Cyan, 0.0f, 0.0f};
-    Vertex v13 = {0.5f, -0.5f, -0.5f, StandardColors::Blue, 1.0f, 0.0f};
-    Vertex v14 = {0.5f, 0.5f, -0.5f, StandardColors::Purple, 1.0f, 1.0f};
-    Vertex v15 = {0.5f, 0.5f, 0.5f, StandardColors::Violet, 0.0f, 1.0f};
+    Vertex v12 = {0.5f, -0.5f, 0.5f, StandardColors::Orange, 0.0f, 0.0f};
+    Vertex v13 = {0.5f, -0.5f, -0.5f, StandardColors::Cyan, 1.0f, 0.0f};
+    Vertex v14 = {0.5f, 0.5f, -0.5f, StandardColors::Violet, 1.0f, 1.0f};
+    Vertex v15 = {0.5f, 0.5f, 0.5f, StandardColors::Yellow, 0.0f, 1.0f};
 
-    // TOP FACE
-    Vertex v16 = {-0.5f, 0.5f, 0.5f, StandardColors::Red, 0.0f, 0.0f};
-    Vertex v17 = {0.5f, 0.5f, 0.5f, StandardColors::Orange, 1.0f, 0.0f};
-    Vertex v18 = {0.5f, 0.5f, -0.5f, StandardColors::Yellow, 1.0f, 1.0f};
-    Vertex v19 = {-0.5f, 0.5f, -0.5f, StandardColors::Green, 0.0f, 1.0f};
+    Vertex v16 = {-0.5f, 0.5f, 0.5f, StandardColors::Green, 0.0f, 0.0f};
+    Vertex v17 = {0.5f, 0.5f, 0.5f, StandardColors::Yellow, 1.0f, 0.0f};
+    Vertex v18 = {0.5f, 0.5f, -0.5f, StandardColors::Violet, 1.0f, 1.0f};
+    Vertex v19 = {-0.5f, 0.5f, -0.5f, StandardColors::Purple, 0.0f, 1.0f};
 
-    // BOTTOM FACE
-    Vertex v20 = {-0.5f, -0.5f, -0.5f, StandardColors::Cyan, 0.0f, 0.0f};
-    Vertex v21 = {0.5f, -0.5f, -0.5f, StandardColors::Blue, 1.0f, 0.0f};
-    Vertex v22 = {0.5f, -0.5f, 0.5f, StandardColors::Purple, 1.0f, 1.0f};
-    Vertex v23 = {-0.5f, -0.5f, 0.5f, StandardColors::Violet, 0.0f, 1.0f};
+    Vertex v20 = {-0.5f, -0.5f, -0.5f, StandardColors::Blue, 0.0f, 0.0f};
+    Vertex v21 = {0.5f, -0.5f, -0.5f, StandardColors::Cyan, 1.0f, 0.0f};
+    Vertex v22 = {0.5f, -0.5f, 0.5f, StandardColors::Orange, 1.0f, 1.0f};
+    Vertex v23 = {-0.5f, -0.5f, 0.5f, StandardColors::Red, 0.0f, 1.0f};
 
     // Each face: two triangles (0-1-2 and 0-2-3 pattern)
     Triangle front1 = {v0, v1, v2};
@@ -144,7 +141,7 @@ int main()
     float zNear = 0.001f, zFar = 20.0f;
     Mat4 model, view, projection;
     model.ident(); model.scale(0.5f, 0.5f, 0.5f);  
-    view.ident(); 
+    view.ident(); view.translate(0, 0, 0.0f);
     projection.perspective(60, infoHeader.width / infoHeader.height, zNear, zFar);
 
     //  Image buffer and depth buffer
@@ -156,7 +153,7 @@ int main()
     //  Texture image in a buffer
     std::vector<uint8_t> tex1;
     int texWidth = 500, texHeight = 500;
-    readBMP("dependencies/textures/stoneBrick2.bmp", tex1, texWidth, texHeight);
+    readBMP("dependencies/textures/stone2.bmp", tex1, texWidth, texHeight);
 
     //  Input Handler
     InputHandler inputHandler(WINDOWS);
@@ -165,7 +162,7 @@ int main()
     //  Rasterizer
     Rasterizer::useInterpolation(true);
     Rasterizer::useTextureMapping(true);
-    Rasterizer::useLighting(false);
+    Rasterizer::useLighting(true);
 
     Rasterizer::attachFramebuffer(frameBuffer);
     Rasterizer::attachDepthBuffer(depthBuffer);
@@ -179,7 +176,7 @@ int main()
         Rasterizer::clearScreen();
 
         //  Movement
-        model.rotate(0.75 * deltaTime, 0.5 * deltaTime, 0);
+        model.rotate(2 * 0.75 * deltaTime, 2 * 0.5 * deltaTime, 0);
         movementController.move();
 
         //  Calculate screen rendering every frame
@@ -190,9 +187,13 @@ int main()
 
             //  Precomupte Values for perspective correction
 
-            Vec4 viewSpacePos1 = view * model * tri.vert1;
-            Vec4 viewSpacePos2 = view * model * tri.vert2;
-            Vec4 viewSpacePos3 = view * model * tri.vert3;
+            Vec4 vert1Vec = {tri.vert1.x, tri.vert1.y, tri.vert1.z, 1.0f};
+            Vec4 vert2Vec = {tri.vert2.x, tri.vert2.y, tri.vert2.z, 1.0f};
+            Vec4 vert3Vec = {tri.vert3.x, tri.vert3.y, tri.vert3.z, 1.0f};
+
+            Vec4 viewSpacePos1 = view * model * vert1Vec;
+            Vec4 viewSpacePos2 = view * model * vert2Vec;
+            Vec4 viewSpacePos3 = view * model * vert3Vec;
 
             Vec4 vert1 = projection * viewSpacePos1;
             Vec4 vert2 = projection * viewSpacePos2;
@@ -208,21 +209,26 @@ int main()
             ndcToScreen(vert2, infoHeader);
             ndcToScreen(vert3, infoHeader);
 
-            //  For perspective correction with tex coordinates
             screenTriangle.vert1 = {vert1.x, vert1.y, vert1.z, tri.vert1.color, tri.vert1.texX, tri.vert1.texY};
-            screenTriangle.vert1.invZ = 1.0f / vert1.w;
-            screenTriangle.vert1.texX_divZ = tri.vert1.texX.value() / vert1.w;
-            screenTriangle.vert1.texY_divZ = tri.vert1.texY.value() / vert1.w;
-
             screenTriangle.vert2 = {vert2.x, vert2.y, vert2.z, tri.vert2.color, tri.vert2.texX, tri.vert2.texY};
-            screenTriangle.vert2.invZ = 1.0f / vert2.w;
-            screenTriangle.vert2.texX_divZ = tri.vert2.texX.value() / vert2.w;
-            screenTriangle.vert2.texY_divZ = tri.vert2.texY.value() / vert2.w;
-
             screenTriangle.vert3 = {vert3.x, vert3.y, vert3.z, tri.vert3.color, tri.vert3.texX, tri.vert3.texY};
-            screenTriangle.vert3.invZ = 1.0f / vert3.w;
-            screenTriangle.vert3.texX_divZ = tri.vert3.texX.value() / vert3.w;
-            screenTriangle.vert3.texY_divZ = tri.vert3.texY.value() / vert3.w;
+
+            //  For perspective correction with tex coordinates
+            
+            if(tri.vert1.hasValue() && tri.vert2.hasValue() && tri.vert3.hasValue() && Rasterizer::isTextureMapped())
+            {
+                screenTriangle.vert1.invZ = 1.0f / vert1.w;
+                screenTriangle.vert1.texX_divZ = tri.vert1.texX.value() / vert1.w;
+                screenTriangle.vert1.texY_divZ = tri.vert1.texY.value() / vert1.w;
+
+                screenTriangle.vert2.invZ = 1.0f / vert2.w;
+                screenTriangle.vert2.texX_divZ = tri.vert2.texX.value() / vert2.w;
+                screenTriangle.vert2.texY_divZ = tri.vert2.texY.value() / vert2.w;
+
+                screenTriangle.vert3.invZ = 1.0f / vert3.w;
+                screenTriangle.vert3.texX_divZ = tri.vert3.texX.value() / vert3.w;
+                screenTriangle.vert3.texY_divZ = tri.vert3.texY.value() / vert3.w;
+            }
 
             //  Rasterize the triangles
             Rasterizer::drawTriangle(screenTriangle, infoHeader, header, zNear, zFar);
