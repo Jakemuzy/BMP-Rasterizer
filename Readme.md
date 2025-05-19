@@ -25,4 +25,4 @@ Utilizing BMPs to act as a sort of virtual screen, I have replicated the rasteri
 
 <h3>Basic Lighting</h3>  
 
-![Gif Illumianated Cube](https://github.com/Jakemuzy/Custom-3D-Renderer/blob/40ad4b495b3ac2b35fa92972c71324942e5a85d6/Examples/LightingCube.mp4)  
+![Gif Illumianated Cube](https://github.com/Jakemuzy/Custom-3D-Renderer/blob/40ad4b495b3ac2b35fa92972c71324942e5a85d6/Examples/lightCube.gif)  
