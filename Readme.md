@@ -8,8 +8,8 @@ Utilizing BMPs to act as a sort of virtual screen, I have replicated the rasteri
 4.) Supports triple buffer rendering for better animated experience  
 5.) Supports linearly interpolation between points to fill in both the colors and pixels in between vertices in a triangle  
 6.) Utilizes frame buffer and depth buffer for better performance  
-7.) Supports texturing mapping onto triangles 
-8.) Supports basic lighting capabilties
+7.) Supports texturing mapping onto triangles  
+8.) Supports basic lighting capabilties  
 9.) Allows for mixing of color interpolation, textures and lighting  
   
 <h2>Examples</h2>  
@@ -22,3 +22,7 @@ Utilizing BMPs to act as a sort of virtual screen, I have replicated the rasteri
 <h3>Texture Mapping</h3>  
   
 ![Gif Textured Cube](https://github.com/Jakemuzy/Custom-3D-Renderer/blob/6765d42c52a4d9916c5f8803def7612aba536b38/Examples/textureCube.gif)       
+
+<h3>Basic Lighting</h3>  
+
+![Gif Illumianated Cube](https://github.com/Jakemuzy/Custom-3D-Renderer/blob/40ad4b495b3ac2b35fa92972c71324942e5a85d6/Examples/LightingCube.mp4)  
