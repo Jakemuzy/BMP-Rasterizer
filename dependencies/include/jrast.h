@@ -1,8 +1,12 @@
 #include <optional>
 
+enum LightType {
+    POINT_LIGHT, SPOT_LIGHT, DIRECTIONAL_LIGHT
+};
+
 struct Vertex
 {
-    float x;
+    float x;    //  Make this vec3
     float y;
     float z;
     Color color;
@@ -10,6 +14,12 @@ struct Vertex
     //  Optional texture coords
     std::optional<float> texX;
     std::optional<float> texY;
+
+    // Optional Normals
+    Vec3 normal;
+
+    // World Pos
+    Vec3 worldPos;
 
     //  Perspective corection (calculated before projection matrix applied)
     float invZ;
@@ -39,6 +49,8 @@ struct PixelData
     Vec3 normal;
     float depth;
 
+    // World Pos for lighting
+    Vec3 worldPos;
     Vec2 screenCoords;
 };
 
@@ -56,7 +68,7 @@ void writeImgBuffer(std::vector<uint8_t>& texBuffer, std::string fileName, InfoH
 namespace 
 {
     //  Boolean flags
-    bool interpolateColor = false, useTextureMap = false, useNormals = false, depthTesting = true;
+    bool interpolateColor = false, useTextureMap = false, useLighting = false, depthTesting = true;
 
     //  Buffers
     std::vector<uint8_t> *frameBuffer = nullptr;
@@ -68,12 +80,16 @@ namespace
 
     //  Lighting Settings
     //  Light type (point, spot, etc)
-    /*
-    float ambientPower = 0.0f;
-    int specularPower = 1.0f;
+    
+    LightType lightType;
+    float ambientStrength = 0.2f;
+    float diffuseStrength = 0.5f;
+    float specularStrength = 0.5f;
+    float shininess = 32;
     Vec3 lightColor = {1.0f, 1.0f, 1.0f};
-    Vec3 lightDir = {1.0f, 0.0f, 0.0f};
-    */
+    Vec3 lightPos = {2.0f, 1.0f, 3.0f};
+    Vec3 camPos; 
+
 
     //Functions
 
@@ -82,6 +98,11 @@ namespace
 
         int correctedY = (infoHeader.height - 1) - data.screenCoords.y;          // flip Y for BMP
         int index = correctedY * infoHeader.width * 3 + data.screenCoords.x * 3; // +3 for 3 bytes per pixel
+
+        //  Blending weight (Should add up to 1)
+        float colorWeight = 0.05f;
+        float texWeight = 0.5f;
+        float lightWeight = 0.5f;
 
         //  Depth testing before anything
         if (depthTesting)
@@ -105,10 +126,20 @@ namespace
             lerpColor.g = std::clamp(data.color.g, 0.0f, 255.0f);
             lerpColor.b = std::clamp(data.color.b, 0.0f, 255.0f);
 
-            float weight = 1.0f;
-            finalColor = finalColor + lerpColor * weight;
-            totalWeight += weight;
+            finalColor = finalColor + lerpColor * colorWeight;
+            totalWeight += colorWeight;
         }
+        else    // Red if no color interpolation            //TESTING FLAT COLORS
+        {
+            lerpColor.r = 255;
+            lerpColor.g = 0;
+            lerpColor.b = 0;
+
+            //  No weight, flat shading
+            finalColor = finalColor + lerpColor * colorWeight;
+            totalWeight += colorWeight;
+        }
+            
 
         if (useTextureMap)
         {
@@ -118,16 +149,65 @@ namespace
             texColor.g = std::clamp((int)(*textureMap)[texIndex + 1], 0, 255);
             texColor.r = std::clamp((int)(*textureMap)[texIndex + 2], 0, 255);
 
-            float weight = 1.0f; // Adjust this to favor texture vs vertex color
-            finalColor = finalColor + texColor * weight;
-            totalWeight += weight;
+            finalColor = finalColor + texColor * texWeight;
+            totalWeight += texWeight;
+        }
+
+        if (useLighting)
+        {
+            //  Could use normal map 
+
+            //  Ambient Lighting
+            Vec3 objColor = {finalColor.r, finalColor.g, finalColor.b};
+            objColor = objColor.normalize();
+            Vec3 ambient = objColor * lightColor * ambientStrength;
+
+            //  Diffuse Lighting
+            Vec3 norm = data.normal.normalize();
+            Vec3 lightDirection = (lightPos - data.worldPos).normalize();
+
+            //std::cout << norm.x << " " << norm.y << " " << norm.z << " " << " \n";
+
+            float diff = norm.dot(lightDirection);
+
+            if(diff < 0)
+                diff = 0;
+            Vec3 diffuse = lightColor * diff * diffuseStrength;
+
+            //  Specular
+            Vec3 reflectDir = (norm * (2.0f * norm.dot(-lightDirection))) - lightDirection;
+            reflectDir = reflectDir.normalize();
+
+            Vec3 viewDir = (camPos - data.worldPos).normalize();
+            float spec = std::max(viewDir.dot(reflectDir), 0.0f);
+            spec = pow(spec, shininess);
+            Vec3 specular = lightColor * specularStrength * spec;
+
+            Vec3 newColor = objColor * (ambient + diffuse + specular);
+            newColor.x = std::clamp(newColor.x, 0.0f, 1.0f);
+            newColor.y = std::clamp(newColor.y, 0.0f, 1.0f);
+            newColor.z = std::clamp(newColor.z, 0.0f, 1.0f);
+
+            finalColor = finalColor + Color{newColor.x, newColor.y, newColor.z} * (255 * lightWeight);
+
+            //std::cout << finalColor.r << " " << finalColor.g << " " << finalColor.b << "\n";
+            totalWeight += lightWeight;
         }
 
         // Normalize the final color
-        finalColor = finalColor * (1.0f / totalWeight); 
+        if (totalWeight > 0.0f)
+        {
+            finalColor = finalColor * (1.0f / totalWeight);
+        }
+
+        //  Clamp and write colors
+        finalColor.r = std::clamp(finalColor.r, 0.0f, 255.0f);
+        finalColor.g = std::clamp(finalColor.g, 0.0f, 255.0f);
+        finalColor.b = std::clamp(finalColor.b, 0.0f, 255.0f);
         (*frameBuffer)[index + 0] = static_cast<uint8_t>(finalColor.b);
         (*frameBuffer)[index + 1] = static_cast<uint8_t>(finalColor.g);
         (*frameBuffer)[index + 2] = static_cast<uint8_t>(finalColor.r);
+
     }
 
     //  Weights for each point inside a triangle
@@ -190,6 +270,7 @@ namespace
         {
             for (int y = startY; y <= endY; y++)
             {
+
                 PixelData pixel;
 
                 //  Pixels off screen
@@ -208,10 +289,16 @@ namespace
                 int index = correctedY * infoHeader.width * 3 + x * 3; // +3 for 3 bytes per pixel
 
                 //  Depth testing
+                
                 uint8_t newDepth;
                 if (!depthTest(index, zFar, v0, v1, v2, w0, w1, w2, newDepth))
                     continue;
                 pixel.depth = newDepth;
+
+                //  Each Pixel in world pos
+                pixel.worldPos.x = w0 * v0.worldPos.x + w1 * v1.worldPos.x + w2 * v2.worldPos.x;
+                pixel.worldPos.y = w0 * v0.worldPos.y + w1 * v1.worldPos.y + w2 * v2.worldPos.y;
+                pixel.worldPos.z = w0 * v0.worldPos.z + w1 * v1.worldPos.z + w2 * v2.worldPos.z;
 
                 //  Color data
                 Color newCol;
@@ -236,7 +323,20 @@ namespace
                     pixel.texCoords = newTexCoords;
                 }
 
-                Vec2 screenPos = {x, y};
+                //  Normal values if enabled
+                if (useLighting && normalMap == nullptr) 
+                {
+                    //  Also have settings for normal map
+                    Vec3 newNormal;
+                    newNormal = (v0.normal * w0 + v1.normal * w1 + v2.normal * w2).normalize();
+                    pixel.normal = newNormal;
+                }
+                else if (useLighting && normalMap != nullptr)
+                {
+
+                }
+
+                Vec2 screenPos = {(float)x, (float)y};
                 pixel.screenCoords = screenPos;
                 pixelShader(pixel, infoHeader);
             }
@@ -249,29 +349,36 @@ namespace Rasterizer
 {
     
     //  Rasterizer Settings 
-    static void useInterpolation(bool value)
+    static void enableInterpolation(bool value)
     {
         interpolateColor = value;
     }
 
-    static void useTextureMapping(bool value)
+    static void enableTextureMapping(bool value)
     {
         useTextureMap = value;
     }
 
-    static void useLighting(bool value) 
+    static void enableLighting(bool value) 
     {
-        useNormals = value;
+        useLighting = value;
     }
 
-    static void lightingSettings(bool value)
+    static void lightingSettings(LightType type, float diffuse, float ambient, float specular)
     {
-
+        if(!useLighting)
+        {
+            std::cerr << "RASTERIZER ERROR: lighting not enabled, but lighting settings are specified\n";
+        }
+        lightType = type;
+        diffuseStrength = diffuse;
+        ambientStrength = ambient;
+        specularStrength = specular;
     }
 
     bool isIntepolated() { return interpolateColor; }
     bool isTextureMapped() { return useTextureMap; }
-    bool isUsingLighting() { return useNormals; }
+    bool isUsingLighting() { return useLighting; }
 
     //  Setting buffers
 
@@ -299,10 +406,19 @@ namespace Rasterizer
 
     void setNormalMap(std::vector<uint8_t> &_depthBuffer, int width, int height)
     {
-        if (!useNormals)
+        if (!useLighting)
         {
             std::cerr << "RASTERIZER ERROR: Normals not enabled\n";
         }
+    }
+
+    void setCamPos(Vec3 _camPos)
+    {
+        if (!useLighting)
+        {
+            std::cerr << "RASTERIZER ERROR: lighting not enabled, but atempting to set camera direction\n";
+        }
+        camPos = _camPos;
     }
 
     //  Functions

@@ -5,6 +5,52 @@ struct Vec2 {
 
 struct Vec3 {
     float x, y, z;
+
+    float dot(const Vec3 &two)
+    {
+        return (x * two.x + y * two.y + z * two.z);
+    }
+
+    Vec3 normalize()
+    {
+        float length = std::sqrt(x * x + y * y + z * z);
+        if (length > 0.0f)
+        {
+            return {x / length, y / length, z / length};
+        }
+
+        //  Default return if 0 length
+        return {0, 0, 0}; 
+    }
+
+    Vec3 operator*(float scalar) const
+    {
+        return {x * scalar, y * scalar, z * scalar};
+    }
+
+    Vec3 operator*(const Vec3 &other) const
+    {
+        return {x * other.x, y * other.y, z * other.z};
+    }
+
+    Vec3 operator+(const Vec3 &other) const
+    {
+        return {x + other.x, y + other.y, z + other.z};
+    }
+
+    Vec3 operator-(const Vec3 &other) const
+    {
+        Vec3 New;
+        New = {x - other.x, y - other.y, z - other.z};
+        return New;
+    }
+
+    Vec3 operator-() const
+    {
+        Vec3 New;
+        New = {-x, -y, -z};
+        return New;
+    }
 };
 
 struct Vec4 
@@ -15,7 +61,6 @@ struct Vec4
         std::cout << x << " " << y << " " << z << " " << w << "\n";
     };
 };
-
 
 struct Mat4
 {
@@ -47,6 +92,80 @@ struct Mat4
         m43 = -1;
     }
 
+    void transpose(const Mat4& mat, Mat4& out) 
+    {
+        out.m11 = mat.m11; out.m12 = mat.m21; out.m13 = mat.m31; out.m14 = mat.m41;
+        out.m21 = mat.m12; out.m22 = mat.m22; out.m23 = mat.m32; out.m24 = mat.m42;
+        out.m31 = mat.m13; out.m32 = mat.m23; out.m33 = mat.m33; out.m34 = mat.m43;
+        out.m41 = mat.m14; out.m42 = mat.m24; out.m43 = mat.m34; out.m44 = mat.m44;
+    }
+
+
+    //  Didn't feel like writing so just copied for now 
+    bool inverse(const Mat4 &mat, Mat4 &out)
+    {
+        float m[16] = {
+            mat.m11, mat.m12, mat.m13, mat.m14,
+            mat.m21, mat.m22, mat.m23, mat.m24,
+            mat.m31, mat.m32, mat.m33, mat.m34,
+            mat.m41, mat.m42, mat.m43, mat.m44
+        };
+
+        float inv[16], det;
+        int i;
+
+        inv[0] = m[5] * m[10] * m[15] - m[5] * m[11] * m[14] - m[9] * m[6] * m[15] + m[9] * m[7] * m[14] + m[13] * m[6] * m[11] - m[13] * m[7] * m[10];
+
+        inv[4] = -m[4] * m[10] * m[15] + m[4] * m[11] * m[14] + m[8] * m[6] * m[15] - m[8] * m[7] * m[14] - m[12] * m[6] * m[11] + m[12] * m[7] * m[10];
+
+        inv[8] = m[4] * m[9] * m[15] - m[4] * m[11] * m[13] - m[8] * m[5] * m[15] + m[8] * m[7] * m[13] + m[12] * m[5] * m[11] - m[12] * m[7] * m[9];
+
+        inv[12] = -m[4] * m[9] * m[14] + m[4] * m[10] * m[13] + m[8] * m[5] * m[14] - m[8] * m[6] * m[13] - m[12] * m[5] * m[10] + m[12] * m[6] * m[9];
+
+        inv[1] = -m[1] * m[10] * m[15] + m[1] * m[11] * m[14] + m[9] * m[2] * m[15] - m[9] * m[3] * m[14] - m[13] * m[2] * m[11] +m[13] * m[3] * m[10];
+
+        inv[5] = m[0] * m[10] * m[15] - m[0] * m[11] * m[14] - m[8] * m[2] * m[15] + m[8] * m[3] * m[14] + m[12] * m[2] * m[11] - m[12] * m[3] * m[10];
+
+        inv[9] = -m[0] * m[9] * m[15] + m[0] * m[11] * m[13] + m[8] * m[1] * m[15] - m[8] * m[3] * m[13] -m[12] * m[1] * m[11] + m[12] * m[3] * m[9];
+
+        inv[13] = m[0] * m[9] * m[14] - m[0] * m[10] * m[13] -m[8] * m[1] * m[14] +m[8] * m[2] * m[13] +m[12] * m[1] * m[10] -m[12] * m[2] * m[9];
+
+        inv[2] = m[1] * m[6] * m[15] -m[1] * m[7] * m[14] -m[5] * m[2] * m[15] + m[5] * m[3] * m[14] + m[13] * m[2] * m[7] -m[13] * m[3] * m[6];
+
+        inv[6] = -m[0] * m[6] * m[15] + m[0] * m[7] * m[14] +m[4] * m[2] * m[15] -m[4] * m[3] * m[14] - m[12] * m[2] * m[7] +m[12] * m[3] * m[6];
+
+        inv[10] = m[0] * m[5] * m[15] -m[0] * m[7] * m[13] - m[4] * m[1] * m[15] + m[4] * m[3] * m[13] + m[12] * m[1] * m[7] - m[12] * m[3] * m[5];
+
+        inv[14] = -m[0] * m[5] * m[14] +m[0] * m[6] * m[13] + m[4] * m[1] * m[14] -m[4] * m[2] * m[13] -m[12] * m[1] * m[6] + m[12] * m[2] * m[5];
+
+        inv[3] = -m[1] * m[6] * m[11] + m[1] * m[7] * m[10] + m[5] * m[2] * m[11] -m[5] * m[3] * m[10] - m[9] * m[2] * m[7] +m[9] * m[3] * m[6];
+
+        inv[7] = m[0] * m[6] * m[11] -m[0] * m[7] * m[10] -m[4] * m[2] * m[11] + m[4] * m[3] * m[10] +m[8] * m[2] * m[7] -m[8] * m[3] * m[6];
+
+        inv[11] = -m[0] * m[5] * m[11] +m[0] * m[7] * m[9] + m[4] * m[1] * m[11] - m[4] * m[3] * m[9] - m[8] * m[1] * m[7] + m[8] * m[3] * m[5];
+
+        inv[15] = m[0] * m[5] * m[10] -m[0] * m[6] * m[9] -m[4] * m[1] * m[10] +m[4] * m[2] * m[9] + m[8] * m[1] * m[6] - m[8] * m[2] * m[5];
+
+        det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
+
+        if (det == 0.0f)
+            return false;
+
+        det = 1.0f / det;
+
+        for (i = 0; i < 16; i++)
+            inv[i] *= det;
+
+        out = {
+            inv[0], inv[1], inv[2], inv[3],
+            inv[4], inv[5], inv[6], inv[7],
+            inv[8], inv[9], inv[10], inv[11],
+            inv[12], inv[13], inv[14], inv[15]
+        };
+
+        return true;
+    }
+
     //  Matrix transformations
     void Mat4::scale(float x, float y, float z){
         m11 *= x;
@@ -61,7 +180,6 @@ struct Mat4
         X.m22 = cos(angleX);    X.m33 = cos(angleX);    X.m23 = -sin(angleX);     X.m32 =  sin(angleX);
         Y.m11 = cos(angleY);    Y.m33 = cos(angleY);    Y.m13 =  sin(angleY);     Y.m31 = -sin(angleY);
         Z.m11 = cos(angleZ);    Z.m22 = cos(angleZ);    Z.m12 = -sin(angleZ);     Z.m21 =  sin(angleZ);
-
 
         (*this) = (*this) * X * Y * Z;
     }
@@ -158,3 +276,35 @@ void ndcToScreen(Vec4& vertex, const InfoHeader& infoHeader)
 
     return;
 }
+
+struct Mat3
+{
+    float
+        m11,
+        m12, m13,
+        m21, m22, m23,
+        m31, m32, m33;
+
+    Mat3(const Mat4 &mat4)
+    {
+        m11 = mat4.m11;
+        m12 = mat4.m12;
+        m13 = mat4.m13;
+        m21 = mat4.m21;
+        m22 = mat4.m22;
+        m23 = mat4.m23;
+        m31 = mat4.m31;
+        m32 = mat4.m32;
+        m33 = mat4.m33;
+    };
+
+    Vec3 operator*(const Vec3 &other)
+    {
+        Vec3 New;
+        New.x = m11 * other.x + m12 * other.y + m13 * other.z;
+        New.y = m21 * other.x + m22 * other.y + m23 * other.z;
+        New.z = m31 * other.x + m32 * other.y + m33 * other.z;
+
+        return New;
+    }
+};

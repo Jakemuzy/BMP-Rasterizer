@@ -14,7 +14,6 @@ public:
         ip.listen();
         inputs input = ip.getInputs();
 
-        //std::cout << (*dt) << '\n';
         float movement = movementSpeed * dt;
         if (input.w == true)
             view.translate(0, 0, movement);
@@ -25,6 +24,23 @@ public:
         if (input.d == true)
             view.translate(-movement, 0, 0);
 
+        if (input.space == true)
+            view.translate(0, -movement, 0);
+        if (input.shift == true)
+            view.translate(0, movement, 0);
+
+        /*
+        if (input.lArrow == true)
+            view.rotate(0, -movement, 0);
+        if (input.rArrow == true)
+            view.rotate(0, movement, 0);
+        if (input.uArrow == true)
+            view.rotate(-movement, 0, 0);
+        if (input.dArrow == true)
+            view.rotate(movement, 0, 0);
+
+        */
+       
         //  Calcaulte angles blah blah blah
     }
 };

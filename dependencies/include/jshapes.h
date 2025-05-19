@@ -16,6 +16,17 @@ struct Color
         return newCol;
     }
 
+    Color operator*(const Color& other) const
+    {
+        Color newCol;
+
+        newCol.r = r * other.r;
+        newCol.g = g * other.g;
+        newCol.b = b * other.b;
+
+        return newCol;
+    }
+
     Color operator+(const Color &other) const
     {
         Color newCol;

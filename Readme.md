@@ -8,7 +8,9 @@ Utilizing BMPs to act as a sort of virtual screen, I have replicated the rasteri
 4.) Supports triple buffer rendering for better animated experience  
 5.) Supports linearly interpolation between points to fill in both the colors and pixels in between vertices in a triangle  
 6.) Utilizes frame buffer and depth buffer for better performance  
-7.) Supports texturing mapping onto triangles  
+7.) Supports texturing mapping onto triangles 
+8.) Supports basic lighting capabilties
+9.) Allows for mixing of color interpolation, textures and lighting  
   
 <h2>Examples</h2>  
 

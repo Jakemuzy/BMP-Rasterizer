@@ -57,8 +57,8 @@ int main()
     InfoHeader infoHeader;
     ColorTable colorTable;
 
-    infoHeader.width = 400;
-    infoHeader.height = 400;
+    infoHeader.width = 300;
+    infoHeader.height = 300;
 
     int rowPadding = (4 - (infoHeader.width * 3) % 4) % 4;           // Ensure each row is a multiple of 4 bytes
     infoHeader.imageSize = infoHeader.width * infoHeader.height * 3; 
@@ -77,41 +77,46 @@ int main()
 
     // Window display for bmp file
     CImg<unsigned char> image;
-    image.resize(infoHeader.width * 1.5, infoHeader.height * 1.5);
+    image.resize(infoHeader.width * 2, infoHeader.height * 2);
     CImgDisplay window(image, "Image", 0);
     window.move(0 + 400, 0 + 200);
 
-    // Define 24 vertices (3 per face)
     // Define 24 vertices (3 per face, corners reuse colors)
-    Vertex v0 = {-0.5f, -0.5f, 0.5f, StandardColors::Red, 0.0f, 0.0f};   
-    Vertex v1 = {0.5f, -0.5f, 0.5f, StandardColors::Orange, 1.0f, 0.0f}; 
-    Vertex v2 = {0.5f, 0.5f, 0.5f, StandardColors::Yellow, 1.0f, 1.0f};  
-    Vertex v3 = {-0.5f, 0.5f, 0.5f, StandardColors::Green, 0.0f, 1.0f}; 
+    Vec3 frontNormal = {0.0f, 0.0f, 1.0f};
+    Vertex v0 = {-0.5f, -0.5f, 0.5f, StandardColors::Red, 0.0f, 0.0f, frontNormal};
+    Vertex v1 = {0.5f, -0.5f, 0.5f, StandardColors::Orange, 1.0f, 0.0f, frontNormal};
+    Vertex v2 = {0.5f, 0.5f, 0.5f, StandardColors::Yellow, 1.0f, 1.0f, frontNormal};
+    Vertex v3 = {-0.5f, 0.5f, 0.5f, StandardColors::Green, 0.0f, 1.0f, frontNormal};
 
-    Vertex v4 = {0.5f, -0.5f, -0.5f, StandardColors::Cyan, 0.0f, 0.0f};  
-    Vertex v5 = {-0.5f, -0.5f, -0.5f, StandardColors::Blue, 1.0f, 0.0f};  
-    Vertex v6 = {-0.5f, 0.5f, -0.5f, StandardColors::Purple, 1.0f, 1.0f}; 
-    Vertex v7 = {0.5f, 0.5f, -0.5f, StandardColors::Violet, 0.0f, 1.0f};  
+    Vec3 backNormal = {0.0f, 0.0f, -1.0f};
+    Vertex v4 = {0.5f, -0.5f, -0.5f, StandardColors::Cyan, 0.0f, 0.0f, backNormal};
+    Vertex v5 = {-0.5f, -0.5f, -0.5f, StandardColors::Blue, 1.0f, 0.0f, backNormal};
+    Vertex v6 = {-0.5f, 0.5f, -0.5f, StandardColors::Purple, 1.0f, 1.0f, backNormal};
+    Vertex v7 = {0.5f, 0.5f, -0.5f, StandardColors::Violet, 0.0f, 1.0f, backNormal};
 
-    Vertex v8 = {-0.5f, -0.5f, -0.5f, StandardColors::Blue, 0.0f, 0.0f};
-    Vertex v9 = {-0.5f, -0.5f, 0.5f, StandardColors::Red, 1.0f, 0.0f};
-    Vertex v10 = {-0.5f, 0.5f, 0.5f, StandardColors::Green, 1.0f, 1.0f};
-    Vertex v11 = {-0.5f, 0.5f, -0.5f, StandardColors::Purple, 0.0f, 1.0f};
+    Vec3 leftNormal = {-1.0f, 0.0f, 0.0f};
+    Vertex v8 = {-0.5f, -0.5f, -0.5f, StandardColors::Blue, 0.0f, 0.0f, leftNormal};
+    Vertex v9 = {-0.5f, -0.5f, 0.5f, StandardColors::Red, 1.0f, 0.0f, leftNormal};
+    Vertex v10 = {-0.5f, 0.5f, 0.5f, StandardColors::Green, 1.0f, 1.0f, leftNormal};
+    Vertex v11 = {-0.5f, 0.5f, -0.5f, StandardColors::Purple, 0.0f, 1.0f, leftNormal};
 
-    Vertex v12 = {0.5f, -0.5f, 0.5f, StandardColors::Orange, 0.0f, 0.0f};
-    Vertex v13 = {0.5f, -0.5f, -0.5f, StandardColors::Cyan, 1.0f, 0.0f};
-    Vertex v14 = {0.5f, 0.5f, -0.5f, StandardColors::Violet, 1.0f, 1.0f};
-    Vertex v15 = {0.5f, 0.5f, 0.5f, StandardColors::Yellow, 0.0f, 1.0f};
+    Vec3 rightNormal = {1.0f, 0.0f, 0.0f};
+    Vertex v12 = {0.5f, -0.5f, 0.5f, StandardColors::Orange, 0.0f, 0.0f, rightNormal};
+    Vertex v13 = {0.5f, -0.5f, -0.5f, StandardColors::Cyan, 1.0f, 0.0f, rightNormal};
+    Vertex v14 = {0.5f, 0.5f, -0.5f, StandardColors::Violet, 1.0f, 1.0f, rightNormal};
+    Vertex v15 = {0.5f, 0.5f, 0.5f, StandardColors::Yellow, 0.0f, 1.0f, rightNormal};
 
-    Vertex v16 = {-0.5f, 0.5f, 0.5f, StandardColors::Green, 0.0f, 0.0f};
-    Vertex v17 = {0.5f, 0.5f, 0.5f, StandardColors::Yellow, 1.0f, 0.0f};
-    Vertex v18 = {0.5f, 0.5f, -0.5f, StandardColors::Violet, 1.0f, 1.0f};
-    Vertex v19 = {-0.5f, 0.5f, -0.5f, StandardColors::Purple, 0.0f, 1.0f};
+    Vec3 topNormal = {0.0f, 1.0f, 0.0f};
+    Vertex v16 = {-0.5f, 0.5f, 0.5f, StandardColors::Green, 0.0f, 0.0f, topNormal};
+    Vertex v17 = {0.5f, 0.5f, 0.5f, StandardColors::Yellow, 1.0f, 0.0f, topNormal};
+    Vertex v18 = {0.5f, 0.5f, -0.5f, StandardColors::Violet, 1.0f, 1.0f, topNormal};
+    Vertex v19 = {-0.5f, 0.5f, -0.5f, StandardColors::Purple, 0.0f, 1.0f, topNormal};
 
-    Vertex v20 = {-0.5f, -0.5f, -0.5f, StandardColors::Blue, 0.0f, 0.0f};
-    Vertex v21 = {0.5f, -0.5f, -0.5f, StandardColors::Cyan, 1.0f, 0.0f};
-    Vertex v22 = {0.5f, -0.5f, 0.5f, StandardColors::Orange, 1.0f, 1.0f};
-    Vertex v23 = {-0.5f, -0.5f, 0.5f, StandardColors::Red, 0.0f, 1.0f};
+    Vec3 bottomNormal = {0.0f, -1.0f, 0.0f};
+    Vertex v20 = {-0.5f, -0.5f, -0.5f, StandardColors::Blue, 0.0f, 0.0f, bottomNormal};
+    Vertex v21 = {0.5f, -0.5f, -0.5f, StandardColors::Cyan, 1.0f, 0.0f, bottomNormal};
+    Vertex v22 = {0.5f, -0.5f, 0.5f, StandardColors::Orange, 1.0f, 1.0f, bottomNormal};
+    Vertex v23 = {-0.5f, -0.5f, 0.5f, StandardColors::Red, 0.0f, 1.0f, bottomNormal};
 
     // Each face: two triangles (0-1-2 and 0-2-3 pattern)
     Triangle front1 = {v0, v1, v2};
@@ -141,7 +146,7 @@ int main()
     float zNear = 0.001f, zFar = 20.0f;
     Mat4 model, view, projection;
     model.ident(); model.scale(0.5f, 0.5f, 0.5f);  
-    view.ident(); view.translate(0, 0, 0.0f);
+    view.ident(); view.rotate(0, 0, 0); view.translate(0.5f, 0, 0.0f);    
     projection.perspective(60, infoHeader.width / infoHeader.height, zNear, zFar);
 
     //  Image buffer and depth buffer
@@ -160,28 +165,47 @@ int main()
     MovementController movementController(inputHandler, view, deltaTime);
 
     //  Rasterizer
-    Rasterizer::useInterpolation(true);
-    Rasterizer::useTextureMapping(true);
-    Rasterizer::useLighting(true);
+    Rasterizer::enableInterpolation(true);
+    Rasterizer::enableTextureMapping(true);
+    Rasterizer::enableLighting(true);
+    //Rasterizer::useTextureColor(false);
 
     Rasterizer::attachFramebuffer(frameBuffer);
     Rasterizer::attachDepthBuffer(depthBuffer);
+
     Rasterizer::setTextureMap(tex1, texWidth, texHeight);
+    //Rasterizer::lightingSettings(DIRECTIONAL_LIGHT, 0.2f, 0.5f);
 
     //  Rewrite file every frame
     while (!window.is_closed() && !inputHandler.getInputs().esc)
     {
         start = std::chrono::high_resolution_clock::now();
 
+        //  Movement
+        model.rotate(2 * 0.75 * deltaTime, 2 * 0.5 * deltaTime, 0);     //  Normals are static currently, modify when rotating matrix
+        movementController.move();
+
         Rasterizer::clearScreen();
 
-        //  Movement
-        model.rotate(2 * 0.75 * deltaTime, 2 * 0.5 * deltaTime, 0);
-        movementController.move();
+        //  Object pos - cameraPos;
+        Mat4 cameraModel;
+        view.inverse(view, cameraModel);    
+        Vec3 cameraPos = {cameraModel.m14, cameraModel.m24, cameraModel.m34};
+
+        Rasterizer::setCamPos(cameraPos);
+
+        Mat4 invModel, invTransModel;
+        model.inverse(model, invModel);
+        invModel.transpose(invModel, invTransModel);
 
         //  Calculate screen rendering every frame
         for (auto &tri : cubeTriangles)
         {
+            //  Update normals 
+            Vec3 normal1 = (Mat3(invTransModel) * tri.vert1.normal).normalize();
+            Vec3 normal2 = (Mat3(invTransModel) * tri.vert2.normal).normalize();
+            Vec3 normal3 = (Mat3(invTransModel) * tri.vert3.normal).normalize();
+
             //  Converts world space to clip space
             Triangle screenTriangle;
 
@@ -199,6 +223,11 @@ int main()
             Vec4 vert2 = projection * viewSpacePos2;
             Vec4 vert3 = projection * viewSpacePos3;
 
+            //  Update world pos based on model matrix
+            Vec3 worldPos1 = {viewSpacePos1.x, viewSpacePos1.y, viewSpacePos1.z};
+            Vec3 worldPos2 = {viewSpacePos2.x, viewSpacePos2.y, viewSpacePos2.z};
+            Vec3 worldPos3 = {viewSpacePos3.x, viewSpacePos3.y, viewSpacePos3.z};
+
             //  Convert clip space to NDC to screen space
 
             clipToNDC(vert1);
@@ -209,9 +238,10 @@ int main()
             ndcToScreen(vert2, infoHeader);
             ndcToScreen(vert3, infoHeader);
 
-            screenTriangle.vert1 = {vert1.x, vert1.y, vert1.z, tri.vert1.color, tri.vert1.texX, tri.vert1.texY};
-            screenTriangle.vert2 = {vert2.x, vert2.y, vert2.z, tri.vert2.color, tri.vert2.texX, tri.vert2.texY};
-            screenTriangle.vert3 = {vert3.x, vert3.y, vert3.z, tri.vert3.color, tri.vert3.texX, tri.vert3.texY};
+            //  Clean this up a bit later
+            screenTriangle.vert1 = {vert1.x, vert1.y, vert1.z, tri.vert1.color, tri.vert1.texX, tri.vert1.texY, normal1, worldPos1};
+            screenTriangle.vert2 = {vert2.x, vert2.y, vert2.z, tri.vert2.color, tri.vert2.texX, tri.vert2.texY, normal2, worldPos2};
+            screenTriangle.vert3 = {vert3.x, vert3.y, vert3.z, tri.vert3.color, tri.vert3.texX, tri.vert3.texY, normal3, worldPos3};
 
             //  For perspective correction with tex coordinates
             
